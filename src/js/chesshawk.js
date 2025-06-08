@@ -182,17 +182,16 @@ async function loadProblems() {
         }
           console.log(`   ✅ Fetch successful (status: ${response.status})`);
         const data = await response.json();
-        
-        // Validate data structure
+          // Validate data structure
         if (!data) {
             throw new Error('No data received from problems.json');
         }
         
-        if (!data.problems || !Array.isArray(data.problems)) {
-            throw new Error('Invalid data structure: problems array not found or not an array');
+        if (!data.puzzles || !Array.isArray(data.puzzles)) {
+            throw new Error('Invalid data structure: puzzles array not found or not an array');
         }
         
-        problems = data.problems;
+        problems = data.puzzles;
         
         console.log(`   📊 === PROBLEMS LOADED ===`);
         console.log(`      📏 Total problems: ${problems.length}`);
