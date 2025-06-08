@@ -180,9 +180,18 @@ async function loadProblems() {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
-        console.log(`   ✅ Fetch successful (status: ${response.status})`);
+          console.log(`   ✅ Fetch successful (status: ${response.status})`);
         const data = await response.json();
+        
+        // Validate data structure
+        if (!data) {
+            throw new Error('No data received from problems.json');
+        }
+        
+        if (!data.problems || !Array.isArray(data.problems)) {
+            throw new Error('Invalid data structure: problems array not found or not an array');
+        }
+        
         problems = data.problems;
         
         console.log(`   📊 === PROBLEMS LOADED ===`);
