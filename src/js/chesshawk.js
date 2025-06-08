@@ -253,8 +253,7 @@ function initializeEventListeners() {
     const checkSolutionBtn = document.getElementById('checkSolutionBtn');
     const getHintBtn = document.getElementById('getHintBtn');
     const resetPositionBtn = document.getElementById('resetPositionBtn');
-    const debugShowSolution = document.getElementById('debugShowSolution');
-    const debugAnalyzeProblems = document.getElementById('debugAnalyzeProblems');
+    const debugShowSolution = document.getElementById('debugShowSolution');    const debugAnalyzeProblemsBtn = document.getElementById('debugAnalyzeProblems');
     
     if (newProblemBtn) {
         newProblemBtn.addEventListener('click', loadRandomProblem);
@@ -280,8 +279,8 @@ function initializeEventListeners() {
         });
     }
     
-    if (debugAnalyzeProblems) {
-        debugAnalyzeProblems.addEventListener('click', function() {
+    if (debugAnalyzeProblemsBtn) {
+        debugAnalyzeProblemsBtn.addEventListener('click', function() {
             console.log('Debug analyze problems button clicked');
             debugAnalyzeProblems();
         });
@@ -343,15 +342,11 @@ function loadRandomProblem() {
             console.log(`      ${index + 1}. ${move.move} (${move.from}-${move.to}) - ${move.explanation}`);
         });
     }
-    
-    // Hints analysis
-    if (currentProblem.hints && currentProblem.hints.length > 0) {
-        console.log(`   💡 Hints available: ${currentProblem.hints.length}`);
-        currentProblem.hints.forEach((hint, index) => {
-            console.log(`      ${index + 1}. ${hint}`);
-        });
+      // Hint analysis
+    if (currentProblem.hint) {
+        console.log(`   💡 Hint available: "${currentProblem.hint}"`);
     } else {
-        console.log('   💡 No hints available');
+        console.log('   💡 No hint available');
     }
       // Load problem position
     try {
@@ -577,39 +572,35 @@ function showHint() {
     console.log(`💡 === showHint() START ===`);
     console.log(`   🎯 Problem ID: ${currentProblem?.id || 'NO PROBLEM'}`);
     console.log(`   📊 Current hint index: ${currentHintIndex}`);
-    
-    if (!currentProblem || !currentProblem.hints) {
-        console.warn(`⚠️  No hints available for problem ${currentProblem?.id || 'NO PROBLEM'}`);
+      if (!currentProblem || !currentProblem.hint) {
+        console.warn(`⚠️  No hint available for problem ${currentProblem?.id || 'NO PROBLEM'}`);
         showFeedback('Ingen hint tilgjengelig', 'error');
         return;
     }
     
-    console.log(`   📏 Total hints available: ${currentProblem.hints.length}`);
-    console.log(`   📋 All hints:`, currentProblem.hints);
+    console.log(`   📏 Hint available: "${currentProblem.hint}"`);
     
-    if (currentHintIndex >= currentProblem.hints.length) {
-        console.warn(`⚠️  All hints already shown for problem ${currentProblem.id} (${currentHintIndex}/${currentProblem.hints.length})`);
-        showFeedback('Alle hint er allerede vist', 'error');
+    if (currentHintIndex >= 1) {
+        console.warn(`⚠️  Hint already shown for problem ${currentProblem.id}`);
+        showFeedback('Hint er allerede vist', 'error');
         return;
     }
     
-    const hint = currentProblem.hints[currentHintIndex];
-    console.log(`   💡 Showing hint ${currentHintIndex + 1}/${currentProblem.hints.length}: "${hint}"`);
+    const hint = currentProblem.hint;
+    console.log(`   💡 Showing hint: "${hint}"`);
     
-    showFeedback(`Hint ${currentHintIndex + 1}: ${hint}`, 'hint');
+    showFeedback(`Hint: ${hint}`, 'hint');
     currentHintIndex++;
     
     console.log(`   📊 Updated hint index: ${currentHintIndex}`);
     
-    // Disable hint button if no more hints
-    if (currentHintIndex >= currentProblem.hints.length) {
-        const hintBtn = document.getElementById('getHintBtn');
-        if (hintBtn) {
-            hintBtn.disabled = true;
-            console.log(`   🔒 Hint button disabled - no more hints available`);
-        } else {
-            console.warn(`   ⚠️  Hint button not found in DOM`);
-        }
+    // Disable hint button after showing hint
+    const hintBtn = document.getElementById('getHintBtn');
+    if (hintBtn) {
+        hintBtn.disabled = true;
+        console.log(`   🔒 Hint button disabled - hint has been shown`);
+    } else {
+        console.warn(`   ⚠️  Hint button not found in DOM`);
     }
     
     console.log(`💡 === showHint() END ===`);
@@ -794,24 +785,40 @@ function showSolution() {
     
     console.log(`   🧩 Solution type: ${Array.isArray(currentProblem.solution) ? 'SEQUENCE' : 'SINGLE/MULTIPLE'}`);
     console.log(`   📏 Solution length: ${currentProblem.solution.length}`);
+      let solutionHtml = '<h4>Løsning:</h4>';
     
-    let solutionHtml = '<h4>Løsning:</h4>';
+    // Check if solution is an array of strings (simple format) or objects (complex format)
+    const isStringArray = Array.isArray(currentProblem.solution) && 
+                          currentProblem.solution.length > 0 && 
+                          typeof currentProblem.solution[0] === 'string';
     
-    // Check if solution is an array (sequence) or legacy format
-    const isSequence = Array.isArray(currentProblem.solution);
-    
-    if (isSequence) {
-        console.log(`   🔗 Rendering sequence solution for problem ${currentProblem.id}:`);
+    if (isStringArray) {
+        console.log(`   🎯 Rendering simple string solution for problem ${currentProblem.id}:`);
         
-        // Multi-move sequence
+        // Simple format - array of move strings
+        currentProblem.solution.forEach((move, index) => {
+            const moveNumber = Math.floor(index / 2) + 1;
+            const isWhiteMove = index % 2 === 0;
+            const movePrefix = isWhiteMove ? `${moveNumber}.` : `${moveNumber}...`;
+            
+            console.log(`      ${index + 1}. ${movePrefix} ${move}`);
+            solutionHtml += `<p><span class="solution-move">${movePrefix} ${move}</span></p>`;
+        });
+    } else if (Array.isArray(currentProblem.solution)) {
+        console.log(`   🔗 Rendering complex object solution for problem ${currentProblem.id}:`);
+        
+        // Complex format - array of solution objects with explanations
         currentProblem.solution.forEach((sol, index) => {
             const moveNumber = Math.floor(index / 2) + 1;
             const isWhiteMove = index % 2 === 0;
             const movePrefix = isWhiteMove ? `${moveNumber}.` : `${moveNumber}...`;
             
-            console.log(`      ${index + 1}. ${movePrefix} ${sol.move} - ${sol.explanation}`);
+            console.log(`      ${index + 1}. ${movePrefix} ${sol.move} - ${sol.explanation || 'Ingen forklaring'}`);
             
-            solutionHtml += `<p><span class="solution-move">${movePrefix} ${sol.move}</span> - ${sol.explanation}`;
+            solutionHtml += `<p><span class="solution-move">${movePrefix} ${sol.move}</span>`;
+            if (sol.explanation) {
+                solutionHtml += ` - ${sol.explanation}`;
+            }
             
             if (sol.opponentResponse) {
                 const nextMoveNumber = isWhiteMove ? moveNumber : moveNumber + 1;
@@ -823,13 +830,8 @@ function showSolution() {
             solutionHtml += `</p>`;
         });
     } else {
-        console.log(`   🎯 Rendering single/multiple move solution for problem ${currentProblem.id}:`);
-        
-        // Legacy format - array of solution objects
-        currentProblem.solution.forEach((sol, index) => {
-            console.log(`      ${index + 1}. ${sol.move} (${sol.from || 'unknown'}-${sol.to || 'unknown'}) - ${sol.explanation}`);
-            solutionHtml += `<p><span class="solution-move">${sol.move}</span> - ${sol.explanation}</p>`;
-        });
+        console.warn(`   ⚠️  Unknown solution format for problem ${currentProblem.id}`);
+        solutionHtml += `<p>Løsning: ${currentProblem.solution}</p>`;
     }
     
     console.log(`   📝 Generated HTML length: ${solutionHtml.length} characters`);
@@ -1207,15 +1209,11 @@ function debugAnalyzeProblems() {
         } catch (error) {
             console.error(`   ❌ ERROR - Invalid FEN: ${error.message}`);
         }
-        
-        // Check hints
-        if (problem.hints && problem.hints.length > 0) {
-            console.log(`   💡 Hints (${problem.hints.length}):`);
-            problem.hints.forEach((hint, hintIndex) => {
-                console.log(`      ${hintIndex + 1}. ${hint}`);
-            });
+          // Check hint
+        if (problem.hint) {
+            console.log(`   💡 Hint: "${problem.hint}"`);
         } else {
-            console.log(`   💡 No hints available`);
+            console.log(`   💡 No hint available`);
         }
     });
     
