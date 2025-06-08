@@ -1,0 +1,66 @@
+/* Chess Hawk Responsive Design */
+
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+    
+    main {
+        padding: 0 8px;
+    }
+    
+    .chess-container, .problem-info, .card, .progress, .game-info {
+        padding: 15px;
+        border-radius: 6px;
+        margin: 0 auto 15px auto;
+        max-width: 100%;
+    }
+    
+    .header {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .header h1 {
+        font-size: 1.8em;
+    }
+    
+    .header .logo {
+        font-size: 2.5em;
+    }
+    
+    .button, .btn {
+        padding: 12px 16px;
+        font-size: 0.9em;
+        margin: 3px;
+        min-width: 100px;
+    }
+    
+    .problem-controls {
+        text-align: center;
+    }
+    
+    .problem-controls .btn {
+        display: inline-block;
+        margin: 5px 3px;
+    }
+    
+    #myBoard {
+        max-width: 100%;
+        width: 100% !important;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+    .chess-container, .problem-info, .card {
+        max-width: 90vw;
+        margin: 0 auto 20px auto;
+    }
+}
+
+@media (min-width: 1025px) {
+    .chess-container, .problem-info, .card {
+        max-width: 500px;
+        margin: 0 auto 20px auto;
+    }
+}

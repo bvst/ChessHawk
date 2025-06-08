@@ -1,0 +1,49 @@
+/* Chess Hawk Chessboard & Piece Styles */
+
+.chess-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 0 auto 20px auto;
+    touch-action: none;
+    text-align: center;
+    max-width: 500px;
+}
+
+#myBoard {
+    margin: 0 auto;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    display: inline-block;
+}
+
+.chess-board-drag {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.piece-417db {
+    cursor: pointer;
+    touch-action: none;
+}
+
+.chess-board .white-square {
+    background: var(--board-light);
+}
+.chess-board .black-square {
+    background: var(--board-dark);
+}
+
+body.dragging {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    overflow: hidden;
+}

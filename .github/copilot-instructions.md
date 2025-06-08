@@ -1,5 +1,74 @@
 # GitHub Copilot Instructions for Chess Hawk Project
 
+## Brand Book
+
+The Chess Hawk brand book defines the visual identity, tone, and style for all code, UI, and documentation. Follow these guidelines to ensure a consistent and professional experience:
+
+### Logo Usage
+- Use the official Chess Hawk logo (if available) in the header and favicon.
+- Logo should appear on the main page and in documentation where appropriate.
+- Maintain clear space around the logo; do not stretch or distort.
+
+### Color Palette
+- **Primary:** #007bff (blue)
+- **Secondary:** #f5f5f5 (light gray background)
+- **Accent:** #ffc107 (gold/yellow for highlights)
+- **Text:** #222 (main), #555 (secondary)
+- Use colors consistently for buttons, alerts, and highlights.
+
+### Typography
+- **Font Family:** 'Arial', 'Helvetica Neue', sans-serif
+- **Headings:** Bold, larger size
+- **Body:** Regular weight, 16px base size
+- **Buttons:** Uppercase, bold
+
+### Iconography
+- Use clean, modern chess piece icons (see `src/img/chesspieces/`)
+- Icons should be consistent in style and size
+- Use SVG or PNG for crisp rendering
+
+### Tone of Voice
+- Friendly, encouraging, and chess-enthusiast
+- All user-facing text in Norwegian (Bokmål)
+- Use clear, concise, and positive language
+- Avoid jargon unless chess-specific
+
+### UI/UX Principles
+- Clarity and simplicity first
+- Mobile-first, responsive design
+- High contrast for accessibility
+- Consistent button and alert styles
+- Use spacing and grouping for readability
+
+### Example UI Elements
+- **Button:**
+  - Background: #007bff, text: white, border-radius: 4px
+  - Hover: #0056b3
+- **Alert:**
+  - Info: Blue background, white text
+  - Warning: Gold background, dark text
+- **Card/Panel:**
+  - White background, subtle shadow, rounded corners
+
+### Documentation Style
+- All documentation in Norwegian
+- Use clear headings, bullet points, and code blocks
+- Include screenshots or diagrams where helpful
+- Follow the Markdown standards in `.github/instructions/markdown.instructions.md`
+
+### Branding in Code & UI
+- Use Norwegian variable names and comments where appropriate
+- UI text and error messages in Norwegian
+- Example:
+  ```javascript
+  // Norsk variabelnavn og kommentar
+  const hovedFarge = '#007bff'; // Primærfarge for Chess Hawk
+  visMelding('Velkommen til Chess Hawk!');
+  ```
+- Use the color palette and typography in all CSS and HTML
+
+---
+
 ## Project Overview
 Chess Hawk is a tactical chess puzzle application built with vanilla JavaScript, featuring 1000 tactical problems across 10 themes. The project has been thoroughly cleaned and organized following best practices.
 
