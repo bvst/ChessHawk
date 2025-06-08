@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessHawk</title>
+    <meta name="description" content="ChessHawk - En sjakktrening app som utfordrer deg med både taktikk og strategi">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♗</text></svg>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="src/lib/chessboard.min.css">
+    <link rel="stylesheet" href="src/css/styles.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <h1>♗ ChessHawk ♗</h1>
+        <p>Se det store bildet. Stuper ned med presisjon.</p>
+    </header>
+    
+    <!-- Main Game Area -->
+    <main>
+        <!-- Chess Board Container -->
+        <section class="chess-container">
+            <div id="myBoard" style="width: 400px"></div>
+        </section>
+        
+        <!-- Game Information Panel -->
+        <section class="game-info">
+            <h3>Velkommen til ChessHawk!</h3>
+            <div class="status" id="status">Hvit sin tur</div>
+            <p>Dette er grunnleggende oppsettet for ChessHawk. Brettet viser startstillingen.</p>
+        </section>
+    </main>
+
+    <!-- JavaScript Libraries -->
+    <script src="src/lib/jquery.min.js"></script>
+    <script src="src/lib/chess.min.js"></script>
+    <script src="src/lib/chessboard.min.js"></script>
+    
+    <!-- ChessHawk Application -->
+    <script src="src/js/chesshawk.js"></script>
+</body>
+</html>
