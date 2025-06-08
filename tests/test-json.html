@@ -11,9 +11,8 @@
         console.log('Starting JSON test...');
         
         async function testLoadProblems() {
-            try {
-                console.log('Fetching problems.json...');
-                const response = await fetch('src/data/problems.json');
+            try {                console.log('Fetching problems.json...');
+                const response = await fetch('../src/data/problems.json');
                 console.log('Response status:', response.status);
                 
                 if (!response.ok) {

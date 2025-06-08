@@ -84,7 +84,7 @@
         async function testJsonDatabase() {
             try {
                 console.log('🔍 Testing JSON database loading...');
-                const response = await fetch('src/data/problems.json');
+                const response = await fetch('../src/data/problems.json');
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
