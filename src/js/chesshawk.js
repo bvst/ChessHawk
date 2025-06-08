@@ -253,7 +253,8 @@ function initializeEventListeners() {
     const checkSolutionBtn = document.getElementById('checkSolutionBtn');
     const getHintBtn = document.getElementById('getHintBtn');
     const resetPositionBtn = document.getElementById('resetPositionBtn');
-    const debugShowSolution = document.getElementById('debugShowSolution');    const debugAnalyzeProblemsBtn = document.getElementById('debugAnalyzeProblems');
+    const debugShowSolution = document.getElementById('debugShowSolution');
+    const debugAnalyzeProblemsBtn = document.getElementById('debugAnalyzeProblems');
     
     if (newProblemBtn) {
         newProblemBtn.addEventListener('click', loadRandomProblem);
@@ -443,104 +444,53 @@ function checkSolution() {
     const playerMove = lastMove.san;
     
     console.log(`🎲 Player move in problem ${currentProblem.id}: ${playerMove} (${lastMove.from}-${lastMove.to})`);
+      // The solution is always an array of move strings: ["Nxe5"] or ["e4", "exd5", "Qxd8#"]
+    const solutionMoves = currentProblem.solution;
+    console.log(`🧩 Problem ${currentProblem.id} solution moves:`, solutionMoves);
     
-    // Check if we have a move sequence (array) or single move (object)
-    const isSequence = Array.isArray(currentProblem.solution);
-    console.log(`🧩 Problem ${currentProblem.id} solution type: ${isSequence ? 'SEQUENCE' : 'SINGLE/MULTIPLE'}`);
-    
-    let expectedMove;
     let expectedMoveStr;
+    let isCorrect = false;
     
-    if (isSequence) {
-        // Multi-move sequence
-        if (currentMoveIndex >= currentProblem.solution.length) {
-            console.error(`❌ ERROR - Move index ${currentMoveIndex} exceeds solution length ${currentProblem.solution.length} for problem ${currentProblem.id}`);
-            showFeedback('Sekvensen er allerede fullført!', 'error');
-            return;
-        }
-        expectedMove = currentProblem.solution[currentMoveIndex];
-        expectedMoveStr = expectedMove.move;
-        console.log(`🎯 Expected move for sequence problem ${currentProblem.id} at index ${currentMoveIndex}: ${expectedMoveStr}`);
-        console.log(`   📝 Move explanation: "${expectedMove.explanation}"`);
-        if (expectedMove.opponentResponse) {
-            console.log(`   🤖 Opponent response planned: ${expectedMove.opponentResponse}`);
-        }
-    } else {
-        // Single move problem (legacy format or tactical with alternative moves)
-        expectedMove = currentProblem.solution.find(sol => 
-            sol.move === playerMove || 
-            (sol.from === lastMove.from && sol.to === lastMove.to)
-        );
-        expectedMoveStr = expectedMove ? expectedMove.move : 'No matching move found';
-        console.log(`🎯 Checking single-move problem ${currentProblem.id} for move: ${playerMove}`);
-        console.log(`   🔍 Expected move found: ${expectedMove ? 'YES' : 'NO'} - ${expectedMoveStr}`);
-        if (expectedMove) {
-            console.log(`   📝 Move explanation: "${expectedMove.explanation}"`);
-        }
+    // Check if we're within the solution sequence
+    if (currentMoveIndex >= solutionMoves.length) {
+        console.error(`❌ ERROR - Move index ${currentMoveIndex} exceeds solution length ${solutionMoves.length} for problem ${currentProblem.id}`);
+        showFeedback('Sekvensen er allerede fullført!', 'error');
+        return;
     }
     
-    // Check if the move is correct
-    const isCorrect = isSequence ? 
-        (expectedMove.move === playerMove || 
-         (expectedMove.from === lastMove.from && expectedMove.to === lastMove.to)) :
-        (expectedMove !== undefined);
+    expectedMoveStr = solutionMoves[currentMoveIndex];
+    console.log(`🎯 Expected move for problem ${currentProblem.id} at index ${currentMoveIndex}: ${expectedMoveStr}`);
+    
+    // Check if the player's move matches the expected move
+    isCorrect = (playerMove === expectedMoveStr);
     
     console.log(`✅❌ Move validation result for problem ${currentProblem.id}: ${isCorrect ? 'CORRECT' : 'INCORRECT'}`);
     console.log(`   🎲 Player played: ${playerMove}`);
     console.log(`   🎯 Expected: ${expectedMoveStr}`);
     
-    if (isCorrect) {
+    console.log(`✅❌ Move validation result for problem ${currentProblem.id}: ${isCorrect ? 'CORRECT' : 'INCORRECT'}`);
+    console.log(`   🎲 Player played: ${playerMove}`);
+    console.log(`   🎯 Expected: ${expectedMoveStr}`);
+      if (isCorrect) {
         console.log(`✅ === CORRECT MOVE in problem ${currentProblem.id} ===`);
         console.log(`   🎉 Move: ${playerMove}`);
-        console.log(`   📝 Explanation: "${expectedMove.explanation}"`);
         
-        // Show success feedback
-        showFeedback(`Riktig! ${expectedMove.explanation}`, 'success');
+        // Show success feedback with problem title/description
+        const feedbackText = currentProblem.description || 'Riktig trekk!';
+        showFeedback(`Riktig! ${feedbackText}`, 'success');
         
-        if (isSequence) {
-            console.log(`🔗 Processing sequence move ${currentMoveIndex + 1}/${currentProblem.solution.length}`);
-            currentMoveIndex++;
-            
-            // Check if there's an opponent response to make
-            if (expectedMove.opponentResponse) {
-                console.log(`🤖 Scheduling opponent response: ${expectedMove.opponentResponse}`);
-                isWaitingForOpponentMove = true;
-                toggleButtonsEnabled(false);
-                
-                // Make opponent move after a short delay
-                setTimeout(() => {
-                    makeOpponentMove(expectedMove.opponentResponse);
-                }, 1000);
-            }
-            
-            // Check if sequence is complete
-            if (currentMoveIndex >= currentProblem.solution.length) {
-                console.log(`🏆 === SEQUENCE COMPLETE for problem ${currentProblem.id} ===`);
-                console.log(`   💰 Points awarded: ${currentProblem.points}`);
-                
-                // Sequence complete
-                playerScore += currentProblem.points;
-                solvedProblems.push(currentProblem.id);
-                
-                showFeedback('Sekvensen fullført! Perfekt løsning!', 'success');
-                showSolution();
-                updateScore();
-                
-                // Disable check solution button
-                const checkBtn = document.getElementById('checkSolutionBtn');
-                if (checkBtn) checkBtn.disabled = true;
-                
-                console.log(`   📊 Updated score: ${playerScore}`);
-                console.log(`   📋 Solved problems: [${solvedProblems.join(', ')}]`);
-            }
-        } else {
-            console.log(`🏆 === SINGLE MOVE PROBLEM SOLVED: ${currentProblem.id} ===`);
+        currentMoveIndex++;
+        
+        // Check if sequence is complete
+        if (currentMoveIndex >= solutionMoves.length) {
+            console.log(`🏆 === PROBLEM COMPLETE for ${currentProblem.id} ===`);
             console.log(`   💰 Points awarded: ${currentProblem.points}`);
             
-            // Single move problem - mark as solved
+            // Problem complete
             playerScore += currentProblem.points;
             solvedProblems.push(currentProblem.id);
             
+            showFeedback('Problem løst! Perfekt!', 'success');
             showSolution();
             updateScore();
             
@@ -550,6 +500,10 @@ function checkSolution() {
             
             console.log(`   📊 Updated score: ${playerScore}`);
             console.log(`   📋 Solved problems: [${solvedProblems.join(', ')}]`);
+        } else {
+            // Multi-move sequence continues
+            console.log(`🔗 Sequence continues: move ${currentMoveIndex + 1}/${solutionMoves.length}`);
+            showFeedback(`Riktig! Fortsett sekvensen... (${currentMoveIndex}/${solutionMoves.length})`, 'success');
         }
     } else {
         console.log(`❌ === INCORRECT MOVE in problem ${currentProblem.id} ===`);
