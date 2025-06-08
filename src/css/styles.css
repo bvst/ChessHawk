@@ -232,6 +232,10 @@ body {
     display: none;
 }
 
+.solution.solution-visible {
+    display: block !important;
+}
+
 .solution h4 {
     margin-top: 0;
     color: #2c3e50;

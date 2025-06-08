@@ -1,0 +1,145 @@
+{
+    "problems": [
+        {
+            "id": "tactical_001",
+            "type": "tactical",
+            "title": "Finn det beste trekket",
+            "description": "Hvit å spille. Kan du finne det avgjørende trekket?",
+            "fen": "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 4",
+            "toMove": "w",
+            "solution": [
+                {
+                    "move": "Bxf7+",
+                    "from": "c4",
+                    "to": "f7",
+                    "explanation": "Løperoffer som tvinger kongen til å flytte",
+                    "opponentResponse": "Kxf7"
+                }
+            ],
+            "hints": [
+                "Se på den svarte kongen",
+                "Kan du ofre en brikke for å få en fordel?",
+                "Tenk på løperen på c4"
+            ],
+            "difficulty": "beginner",
+            "category": "fork",
+            "points": 10
+        },
+        {
+            "id": "tactical_002",
+            "type": "tactical",
+            "title": "Finn det beste trekket",
+            "description": "Svart å spille. Finn den sterke kombinasjonen!",
+            "fen": "r1bq1rk1/ppp2ppp/2n5/3n4/3P4/2N1PN2/PPP2PPP/R1BQKB1R b KQ - 0 8",
+            "toMove": "b",
+            "solution": [
+                {
+                    "move": "Nxe3",
+                    "from": "d5",
+                    "to": "e3",
+                    "explanation": "Springer tar bonde med gaffel-trussel",
+                    "opponentResponse": "fxe3"
+                }
+            ],
+            "hints": [
+                "Springeren på d5 har mange muligheter",
+                "Se på de hvite brikkene som ikke er beskyttet",
+                "Kan du angripe flere brikker samtidig?"
+            ],
+            "difficulty": "intermediate",
+            "category": "knight_fork",
+            "points": 15
+        },
+        {
+            "id": "strategic_001",
+            "type": "strategic",
+            "title": "Finn det beste trekket",
+            "description": "Hvit å spille. Hvilken plan bør hvit følge?",
+            "fen": "rnbqkb1r/pp3ppp/3ppn2/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 6",
+            "toMove": "w",
+            "solution": [
+                {
+                    "move": "Bg5",
+                    "from": "c1",
+                    "to": "g5",
+                    "explanation": "Utvikler løper med press på springeren, følger åpningsprinsipper"
+                },
+                {
+                    "move": "Bd3",
+                    "from": "f1",
+                    "to": "d3",
+                    "explanation": "Alternativ: utvikler løper mot kongestilling"
+                }
+            ],
+            "hints": [
+                "Fokuser på utvikling av brikker",
+                "Hvilke brikker er ikke utviklet ennå?",
+                "Tenk på press mot motstanderens posisjon"
+            ],
+            "difficulty": "intermediate",
+            "category": "development",
+            "points": 20
+        },
+        {
+            "id": "strategic_002",
+            "type": "strategic",
+            "title": "Finn det beste trekket",
+            "description": "Svart å spille. Hvordan bør svart forbedre stillingen?",
+            "fen": "r1bq1rk1/ppp2ppp/2nb1n2/3p4/3P4/2NBPN2/PPP2PPP/R1BQ1RK1 b - - 0 9",
+            "toMove": "b",
+            "solution": [
+                {
+                    "move": "Bb7",
+                    "from": "c8",
+                    "to": "b7",
+                    "explanation": "Fianchetto-utvikling, kontroll over lange diagonal"
+                },
+                {
+                    "move": "Re8",
+                    "from": "f8",
+                    "to": "e8",
+                    "explanation": "Sentraliserer tårnet, forbereder e-fil kontroll"
+                }
+            ],
+            "hints": [
+                "Hvor kan løperen på c8 plasseres best?",
+                "Tenk på diagonal kontroll",
+                "Hvilke filer kan kontrolleres?"
+            ],
+            "difficulty": "advanced",
+            "category": "piece_coordination",
+            "points": 25
+        },
+        {
+            "id": "tactical_003",
+            "type": "tactical",
+            "title": "Finn det beste trekket",
+            "description": "Hvit å spille. Matt i 2 trekk!",
+            "fen": "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1",
+            "toMove": "w",
+            "solution": [
+                {
+                    "move": "Re8+",
+                    "from": "e1",
+                    "to": "e8",
+                    "explanation": "Tårnet gir sjakk og tvinger kongen",
+                    "opponentResponse": "Kh7"
+                },
+                {
+                    "move": "Rh8#",
+                    "from": "e8",
+                    "to": "h8",
+                    "explanation": "Matt! Tårnet på h8 gir sjakkmatt"
+                }
+            ],
+            "hints": [
+                "Dette er matt i 2",
+                "Start med sjakk",
+                "Tårnet har kraft på 8. rad"
+            ],
+            "difficulty": "beginner",
+            "category": "mate",
+            "points": 30
+        }
+    ]
+}
