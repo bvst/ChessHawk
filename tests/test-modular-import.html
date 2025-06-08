@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Modular Puzzle Import System</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+        }
+        .button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        .button:hover { 
+            background: #0056b3; 
+        }
+        .log { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            white-space: pre-wrap; 
+            max-height: 400px; 
+            overflow-y: auto; 
+        }
+        .stats { 
+            background: #e9ecef; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Modular Puzzle Import System Test</h1>
+        
+        <div>
+            <h3>Test Buttons</h3>
+            <button class="button" onclick="testLoadModules()">1. Load Modular System</button>
+            <button class="button" onclick="testLichessImport()">2. Test Lichess Import (5 puzzles)</button>
+            <button class="button" onclick="testValidation()">3. Test Validation</button>
+            <button class="button" onclick="testStatistics()">4. Show Statistics</button>
+            <button class="button" onclick="testExport()">5. Test Export</button>
+            <button class="button" onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div class="stats" id="stats">
+            <strong>System Status:</strong> Not loaded
+        </div>
+
+        <div class="log" id="log">Ready to test modular puzzle import system...\n</div>
+    </div>
+
+    <!-- Load the new modular system -->
+    <script src="../src/js/puzzle-import-system.js"></script>
+
+    <script>
+        let puzzleImporter = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStats(message) {
+            document.getElementById('stats').innerHTML = '<strong>System Status:</strong> ' + message;
+        }
+
+        function clearLog() {
+            document.getElementById('log').textContent = 'Log cleared...\n';
+        }
+
+        async function testLoadModules() {
+            try {
+                log('🔄 Loading modular puzzle import system...');
+                updateStats('Loading modules...');
+                
+                if (!window.PuzzleImportSystem) {
+                    throw new Error('PuzzleImportSystem not available');
+                }
+
+                const PuzzleImporter = await window.PuzzleImportSystem.loadModules('../src/js/');
+                puzzleImporter = new PuzzleImporter();
+                
+                log('✅ Modular system loaded successfully!');
+                updateStats('✅ Modules loaded - Ready for import');
+                
+                // Test that all modules are available
+                const modules = ['LichessImporter', 'PuzzleConverter', 'PuzzleValidator', 'PuzzleExporter'];
+                modules.forEach(module => {
+                    if (window[module]) {
+                        log(`  ✅ ${module} available`);
+                    } else {
+                        log(`  ❌ ${module} missing`);
+                    }
+                });
+
+            } catch (error) {
+                log('❌ Error loading modules: ' + error.message);
+                updateStats('❌ Failed to load modules');
+                console.error(error);
+            }
+        }
+
+        async function testLichessImport() {
+            if (!puzzleImporter) {
+                log('❌ Please load modules first');
+                return;
+            }
+
+            try {
+                log('🌐 Testing Lichess import (5 puzzles)...');
+                updateStats('Importing from Lichess...');
+                
+                const puzzles = await puzzleImporter.importFromLichess(5, 'fork');
+                
+                log(`✅ Imported ${puzzles.length} puzzles successfully!`);
+                log(`First puzzle: ${puzzles[0]?.title || 'N/A'}`);
+                updateStats(`✅ Imported ${puzzles.length} puzzles`);
+                
+            } catch (error) {
+                log('❌ Import error: ' + error.message);
+                updateStats('❌ Import failed');
+                console.error(error);
+            }
+        }
+
+        async function testValidation() {
+            if (!puzzleImporter) {
+                log('❌ Please load modules first');
+                return;
+            }
+
+            try {
+                log('🔍 Testing puzzle validation...');
+                
+                const validation = puzzleImporter.validateImportedPuzzles();
+                log(`✅ Validation result: ${validation.message}`);
+                log(`  Total puzzles: ${validation.totalPuzzles}`);
+                log(`  Unique IDs: ${validation.uniqueIds}`);
+                
+            } catch (error) {
+                log('❌ Validation error: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        async function testStatistics() {
+            if (!puzzleImporter) {
+                log('❌ Please load modules first');
+                return;
+            }
+
+            try {
+                log('📊 Getting puzzle statistics...');
+                
+                const stats = puzzleImporter.getStatistics();
+                log('Statistics:');
+                log(`  Total: ${stats.total || 0}`);
+                
+                if (stats.byDifficulty) {
+                    log('  By Difficulty:');
+                    Object.entries(stats.byDifficulty).forEach(([key, value]) => {
+                        log(`    ${key}: ${value}`);
+                    });
+                }
+                
+                if (stats.byCategory) {
+                    log('  By Category:');
+                    Object.entries(stats.byCategory).forEach(([key, value]) => {
+                        log(`    ${key}: ${value}`);
+                    });
+                }
+                
+                if (stats.ratingRange) {
+                    log(`  Rating range: ${stats.ratingRange.min} - ${stats.ratingRange.max}`);
+                }
+                
+            } catch (error) {
+                log('❌ Statistics error: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        async function testExport() {
+            if (!puzzleImporter) {
+                log('❌ Please load modules first');
+                return;
+            }
+
+            try {
+                log('💾 Testing export functionality...');
+                
+                const jsonData = puzzleImporter.exportToJSON();
+                
+                if (jsonData) {
+                    log('✅ Export successful!');
+                    log(`  Data length: ${jsonData.length} characters`);
+                    
+                    // Try to download
+                    puzzleImporter.downloadImportedPuzzles('test-export.json');
+                    log('📁 Download initiated');
+                } else {
+                    log('⚠️ No data to export');
+                }
+                
+            } catch (error) {
+                log('❌ Export error: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        // Auto-load on page ready
+        window.addEventListener('load', () => {
+            log('Page loaded - Click "Load Modular System" to begin testing');
+        });
+    </script>
+</body>
+</html>
