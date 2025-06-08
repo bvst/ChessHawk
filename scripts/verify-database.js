@@ -5,28 +5,39 @@ console.log('=== VERIFISERING AV TAKTISK DATABASE ===\n');
 try {
     const data = JSON.parse(fs.readFileSync('src/data/problems.json', 'utf8'));
     
-    console.log(`Totalt antall problemer: ${data.totalPuzzles}`);
-    console.log(`Database versjon: ${data.version}`);
-    console.log(`Generert: ${data.generated}`);
-    console.log(`Antall temaer: ${data.themes.length}`);
+    // Håndter begge strukturer
+    const problems = data.problems || data.puzzles;
+    const totalCount = data.problems?.length || data.totalPuzzles;
+    
+    console.log(`Totalt antall problemer: ${totalCount}`);
+    
+    if (data.version) {
+        console.log(`Database versjon: ${data.version}`);
+        console.log(`Generert: ${data.generated}`);
+    }
+    
+    // Finn alle unike kategorier/themes
+    const categories = data.themes || [...new Set(problems.map(p => p.category))];
+    console.log(`Antall temaer: ${categories.length}`);
+    console.log(`Temaer: ${categories.join(', ')}`);
     
     console.log('\n=== FØRSTE PROBLEM PER TEMA ===');
     
-    data.themes.forEach(theme => {
-        const puzzle = data.puzzles.find(p => p.theme === theme);
-        const themeCount = data.puzzles.filter(p => p.theme === theme).length;
+    categories.forEach(category => {
+        const puzzle = problems.find(p => (p.category || p.theme) === category);
+        const categoryCount = problems.filter(p => (p.category || p.theme) === category).length;
         
-        console.log(`\n${theme.toUpperCase()} (${themeCount} problemer):`);
+        console.log(`\n${category.toUpperCase()} (${categoryCount} problemer):`);
         console.log(`  Tittel: ${puzzle.title}`);
-        console.log(`  Beskrivelse: ${puzzle.description}`);
-        console.log(`  Vanskelighet: ${puzzle.difficulty} (${puzzle.rating})`);
+        console.log(`  Beskrivelse: ${puzzle.description}`);        console.log(`  Vanskelighet: ${puzzle.difficulty} (${puzzle.rating})`);
         console.log(`  Poeng: ${puzzle.points}`);
-        console.log(`  Løsning: ${puzzle.solution.join(', ')}`);
+        const solutionText = puzzle.solution?.map ? puzzle.solution.map(s => s.move).join(', ') : puzzle.solution?.join(', ') || 'N/A';
+        console.log(`  Løsning: ${solutionText}`);
     });
     
     // Statistikk
     const difficulties = {};
-    data.puzzles.forEach(p => {
+    problems.forEach(p => {
         difficulties[p.difficulty] = (difficulties[p.difficulty] || 0) + 1;
     });
     

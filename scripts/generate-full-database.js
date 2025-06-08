@@ -143,7 +143,7 @@ function generateFullDatabase() {
         totalPuzzles: allPuzzles.length,
         themes: Object.keys(themes),
         source: 'Generated tactical puzzles with Norwegian localization',
-        puzzles: allPuzzles
+        problems: allPuzzles
     };
     
     console.log(`Total problemer generert: ${allPuzzles.length}`);
@@ -154,7 +154,7 @@ function generateFullDatabase() {
 
 // Generer og lagre databasen
 const database = generateFullDatabase();
-const outputPath = path.join(__dirname, 'src', 'data', 'problems.json');
+const outputPath = path.join(__dirname, '..', 'src', 'data', 'problems.json');
 
 // Opprett backup av eksisterende fil hvis den finnes
 if (fs.existsSync(outputPath)) {
