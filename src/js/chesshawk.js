@@ -126,10 +126,15 @@ function initializeBoard() {
         onDrop: onDrop,
         onSnapEnd: onSnapEnd,
         onMouseoutSquare: onMouseoutSquare,
-        onMouseoverSquare: onMouseoverSquare
+        onMouseoverSquare: onMouseoverSquare,
+        onDragStart: onDragStart,
+        onDragMove: onDragMove
     };
     
     board = Chessboard('myBoard', config);
+    
+    // Legg til mobile touch event handlers
+    initializeMobileTouchHandlers();
 }
 
 /**
@@ -962,6 +967,12 @@ function onDrop(source, target) {
     console.log(`   ⏳ Waiting for opponent: ${isWaitingForOpponentMove}`);
     console.log(`   📊 Current position: ${game.fen()}`);
     
+    // Clean up dragging state
+    document.body.classList.remove('dragging');
+    if ('ontouchstart' in window) {
+        document.removeEventListener('touchmove', preventTouchMove);
+    }
+    
     // Don't allow moves if waiting for opponent
     if (isWaitingForOpponentMove) {
         console.log(`⏳ BLOCKING move - waiting for opponent in problem ${currentProblem?.id}`);
@@ -1018,6 +1029,12 @@ function onDrop(source, target) {
  */
 function onSnapEnd() {
     board.position(game.fen());
+    
+    // Remove dragging class and touch event listeners
+    document.body.classList.remove('dragging');
+    if ('ontouchstart' in window) {
+        document.removeEventListener('touchmove', preventTouchMove);
+    }
 }
 
 /**
@@ -1274,4 +1291,78 @@ function debugTestBoardOrientation() {
             }
         }, 500);
     }
+}
+
+/**
+ * Handle drag start events
+ * @param {string} source - Source square
+ * @param {Object} piece - Piece being dragged
+ * @returns {boolean} false if drag should be prevented
+ */
+function onDragStart(source, piece) {
+    // Don't allow moves if waiting for opponent
+    if (isWaitingForOpponentMove) {
+        console.log(`⏳ BLOCKING drag - waiting for opponent in problem ${currentProblem?.id}`);
+        return false;
+    }
+    
+    // Add dragging class to body to prevent scrolling
+    document.body.classList.add('dragging');
+    
+    // Prevent default touch behavior on mobile
+    if ('ontouchstart' in window) {
+        document.addEventListener('touchmove', preventTouchMove, { passive: false });
+    }
+    
+    return true;
+}
+
+/**
+ * Handle drag move events
+ * @param {string} newLocation - New location of piece being dragged
+ */
+function onDragMove(newLocation) {
+    // Continue preventing scroll during drag
+    if ('ontouchstart' in window) {
+        document.addEventListener('touchmove', preventTouchMove, { passive: false });
+    }
+}
+
+/**
+ * Initialize mobile touch handlers to prevent scrolling during piece drag
+ */
+function initializeMobileTouchHandlers() {
+    console.log('📱 Initializing mobile touch handlers...');
+    
+    // Add touch event listeners to the board container
+    const boardElement = document.getElementById('myBoard');
+    if (boardElement && 'ontouchstart' in window) {
+        console.log('   📱 Mobile device detected - adding touch handlers');
+        
+        // Prevent default touch behavior on the board
+        boardElement.addEventListener('touchstart', function(e) {
+            console.log('📱 Touch start on chessboard');
+            // Allow the touch to proceed for piece selection
+        }, { passive: true });
+        
+        // Prevent scrolling during piece dragging
+        boardElement.addEventListener('touchmove', function(e) {
+            console.log('📱 Touch move on chessboard - preventing scroll');
+            e.preventDefault();
+            e.stopPropagation();
+        }, { passive: false });
+        
+        console.log('   ✅ Mobile touch handlers initialized');
+    } else {
+        console.log('   💻 Desktop device - skipping mobile touch handlers');
+    }
+}
+
+/**
+ * Prevent touch move events during drag (to stop scrolling)
+ * @param {Event} e - Touch event
+ */
+function preventTouchMove(e) {
+    e.preventDefault();
+    e.stopPropagation();
 }

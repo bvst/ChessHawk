@@ -37,10 +37,41 @@ body {
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+    /* Forhindre scrolling under drag på mobil */
+    touch-action: none;
 }
 
 #myBoard {
     margin: 0 auto;
+    /* Forhindre browser zoom og scroll under touch */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Forhindre scrolling når vi drar brikker */
+.chess-board-drag {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+/* Chessboard piece styling for better mobile interaction */
+.piece-417db {
+    cursor: pointer;
+    touch-action: none;
+}
+
+/* Prevent text selection during drag */
+body.dragging {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    overflow: hidden;
 }
 
 /* Problem Information Panel */
@@ -277,18 +308,35 @@ body {
 @media (max-width: 768px) {
     body {
         padding: 10px;
+        /* Forhindre overscroll på iOS */
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
     }
     
     .header h1 {
         font-size: 2em;
     }
-    
-    .chess-container {
+      .chess-container {
         padding: 15px;
+        /* Ekstra touch-action regler for mobil */
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
     }
     
     #myBoard {
         width: 320px !important;
+        /* Forhindre zoom på double-tap */
+        touch-action: manipulation;
+    }
+    
+    /* Forbedret touch-opplevelse for sjakkbrikker */
+    .piece-417db {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        touch-action: none;
     }
     
     .problem-info,
@@ -306,6 +354,9 @@ body {
     .btn {
         width: 100%;
         max-width: 200px;
+        /* Forbedret touch target størrelse */
+        min-height: 44px;
+        touch-action: manipulation;
     }
     
     .problem-meta {
