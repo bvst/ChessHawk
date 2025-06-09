@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Hawk - Solution Validation Test</title>
+    <link rel="stylesheet" href="../src/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test: Løsningsvalidering</h1>
+          <div class="test-info">
+            <h3>⚠️ VIKTIG - CORS Problem Fix:</h3>
+            <p><strong>For å teste lokalt:</strong></p>
+            <ol>
+                <li>Åpne denne filen via en HTTP-server (ikke file://)</li>
+                <li>Bruk VS Code Live Server eller kjør: <code>python -m http.server 8000</code></li>
+                <li>Gå til: <code>http://localhost:8000/tests/test-solution-validation.html</code></li>
+            </ol>
+            
+            <h3>Test Instruksjoner:</h3>
+            <ol>
+                <li>Last en tilfeldig oppgave</li>
+                <li>Gjør det <strong>korrekte</strong> trekket som vist i løsningen</li>
+                <li>Verify at applikasjonen godkjenner trekket</li>
+                <li>Verify at du får poeng</li>
+            </ol>
+        </div>
+        
+        <div class="test-expected">
+            <h4>Forventet Resultat:</h4>
+            <ul>
+                <li>✅ Korrekte trekk godkjennes umiddelbart</li>
+                <li>✅ Grønn feedback: "Riktig! [beskrivelse]"</li>
+                <li>✅ Poeng legges til i score</li>
+                <li>✅ "Vis løsning" knapp fungerer</li>
+            </ul>
+        </div>
+        
+        <div class="test-quick">
+            <h4>Quick Test Problem:</h4>
+            <p><strong>Fork Problem #1:</strong></p>
+            <p>FEN: rnbqkb1r/pppp1ppp/5n2/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR w KQkq - 2 3</p>
+            <p><strong>Korrekt løsning:</strong> Nxe5 (Springer gaffel)</p>
+        </div>
+        
+        <div id="chessboard-container">
+            <div id="myBoard" style="width: 400px"></div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="loadRandomProblem()">🎲 Last Tilfeldig Problem</button>
+            <button onclick="showSolution()">📖 Vis Løsning</button>
+            <button onclick="checkSolution()">✅ Sjekk Løsning</button>
+        </div>
+        
+        <div id="feedback" class="feedback" style="display: none;"></div>
+        <div id="solution" class="solution" style="display: none;"></div>
+        
+        <div class="test-results">
+            <h4>Test Results:</h4>
+            <div id="test-log"></div>
+        </div>
+    </div>
+
+    <!-- Chess libraries -->
+    <script src="../src/lib/jquery.min.js"></script>
+    <script src="../src/lib/chess.min.js"></script>
+    <script src="../src/lib/chessboard.min.js"></script>
+    <script src="../src/js/chesshawk.js"></script>
+    
+    <script>
+        // Test logging
+        function logTest(message, type = 'info') {
+            const log = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue';
+            log.innerHTML += `<p style="color: ${color};">[${timestamp}] ${message}</p>`;
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            logTest('🚀 Test page loaded - starting Chess Hawk initialization...');
+            
+            // Initialize the chess application
+            if (typeof initializeGame === 'function') {
+                initializeGame();
+                logTest('✅ Chess Hawk initialized successfully');
+            } else {
+                logTest('❌ ERROR: initializeGame function not found!', 'error');
+            }
+        });
+        
+        // Override some functions for testing
+        const originalShowFeedback = window.showFeedback;
+        window.showFeedback = function(message, type) {
+            logTest(`📢 Feedback: "${message}" (${type})`, type);
+            return originalShowFeedback.call(this, message, type);
+        };
+        
+        const originalCheckSolution = window.checkSolution;
+        window.checkSolution = function() {
+            logTest('🔍 Testing solution validation...');
+            return originalCheckSolution.call(this);
+        };
+    </script>
+</body>
+</html>

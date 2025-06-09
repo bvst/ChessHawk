@@ -172,10 +172,27 @@ function setBoardOrientation(toMove) {
  */
 async function loadProblems() {
     console.log('📂 === loadProblems() START ===');
-    
     try {
         console.log('   🌐 Fetching problems.json...');
-        const response = await fetch('src/data/problems.json');
+        
+        // Determine correct path based on current location
+        const currentPath = window.location.pathname;
+        const isInTestsFolder = currentPath.includes('/tests/');
+        let jsonPath = isInTestsFolder ? '../src/data/problems.json' : 'src/data/problems.json';
+        
+        console.log(`   📍 Current path: ${currentPath}`);
+        console.log(`   📂 Trying JSON path: ${jsonPath}`);
+        
+        let response;
+        try {
+            response = await fetch(jsonPath);
+        } catch (firstError) {
+            console.log(`   ⚠️  First attempt failed, trying alternative path...`);
+            // Try alternative path if the first one fails
+            jsonPath = isInTestsFolder ? 'src/data/problems.json' : '../src/data/problems.json';
+            console.log(`   📂 Trying alternative path: ${jsonPath}`);
+            response = await fetch(jsonPath);
+        }
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

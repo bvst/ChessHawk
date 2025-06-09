@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Hawk - Button Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .test-result {
+            font-weight: bold;
+            padding: 5px;
+            margin: 5px 0;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button {
+            margin: 5px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #output {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chess Hawk - Button Functionality Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Buttons</h3>
+        <button onclick="testHintFunction()">Test Hint Function</button>
+        <button onclick="testSolutionFunction()">Test Solution Function</button>
+        <button onclick="testDebugFunction()">Test Debug Function</button>
+        <button onclick="loadSampleProblem()">Load Sample Problem</button>
+        <button onclick="clearOutput()">Clear Output</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Mock UI Elements</h3>
+        <div id="feedback" style="display:none; padding: 10px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; margin: 10px 0;"></div>
+        <div id="solution" style="display:none; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; margin: 10px 0;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Output</h3>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        // Mock the chess libraries and global variables
+        let problems = [];
+        let currentProblem = null;
+        let currentHintIndex = 0;
+        let playerScore = 0;
+        let solvedProblems = [];
+        let currentMoveIndex = 0;
+        let isWaitingForOpponentMove = false;
+
+        // Output function
+        function log(message) {
+            const output = document.getElementById('output');
+            output.textContent += new Date().toLocaleTimeString() + ' - ' + message + '\n';
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').textContent = '';
+        }
+
+        // Sample problem data matching the actual structure
+        const sampleProblem = {
+            "id": "test_1",
+            "theme": "fork",
+            "title": "Test Gaffel-taktikk",
+            "description": "Test problem for functionality",
+            "fen": "rnbqkb1r/pppp1ppp/5n2/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR w KQkq - 2 3",
+            "solution": ["Nxe5"],
+            "difficulty": "beginner", 
+            "rating": 1000,
+            "points": 5,
+            "hint": "Se etter muligheter til å angripe kongen og en annen brikke samtidig",
+            "tags": ["fork", "beginner"],
+            "source": "Generated",
+            "createdAt": "2025-06-08T18:39:44.743Z"
+        };
+
+        function loadSampleProblem() {
+            currentProblem = sampleProblem;
+            currentHintIndex = 0;
+            currentMoveIndex = 0;
+            isWaitingForOpponentMove = false;
+            log('✅ Sample problem loaded: ' + currentProblem.title);
+            log('   ID: ' + currentProblem.id);
+            log('   Hint available: "' + currentProblem.hint + '"');
+            log('   Solution: ' + JSON.stringify(currentProblem.solution));
+        }
+
+        // Test functions based on the actual Chess Hawk code
+        function showFeedback(message, type = 'success') {
+            log(`💬 showFeedback() called:`);
+            log(`   Message: "${message}"`);
+            log(`   Type: ${type}`);
+            
+            const feedbackElement = document.getElementById('feedback');
+            if (!feedbackElement) {
+                log('❌ ERROR - Feedback element not found!');
+                return;
+            }
+            
+            feedbackElement.textContent = message;
+            feedbackElement.className = `feedback ${type}`;
+            feedbackElement.style.display = 'block';
+            
+            log('   ✅ Feedback displayed successfully');
+        }
+
+        function showHint() {
+            log(`💡 showHint() START`);
+            log(`   Problem ID: ${currentProblem?.id || 'NO PROBLEM'}`);
+            log(`   Current hint index: ${currentHintIndex}`);
+            
+            if (!currentProblem || !currentProblem.hint) {
+                log(`⚠️ No hint available for problem ${currentProblem?.id || 'NO PROBLEM'}`);
+                showFeedback('Ingen hint tilgjengelig', 'error');
+                return;
+            }
+            
+            log(`   Hint available: "${currentProblem.hint}"`);
+            
+            if (currentHintIndex >= 1) {
+                log(`⚠️ Hint already shown for problem ${currentProblem.id}`);
+                showFeedback('Hint er allerede vist', 'error');
+                return;
+            }
+            
+            const hint = currentProblem.hint;
+            log(`   💡 Showing hint: "${hint}"`);
+            
+            showFeedback(`Hint: ${hint}`, 'hint');
+            currentHintIndex++;
+            
+            log(`   Updated hint index: ${currentHintIndex}`);
+            log(`💡 showHint() END`);
+        }
+
+        function showSolution() {
+            log(`📖 showSolution() START`);
+            log(`   Problem ID: ${currentProblem?.id || 'NO PROBLEM'}`);
+            
+            if (!currentProblem) {
+                log('❌ ERROR - No current problem to show solution for');
+                return;
+            }
+            
+            const solutionElement = document.getElementById('solution');
+            if (!solutionElement) {
+                log('❌ ERROR - Solution element not found!');
+                return;
+            }
+            
+            log(`   Solution type: ${Array.isArray(currentProblem.solution) ? 'ARRAY' : 'OTHER'}`);
+            log(`   Solution length: ${currentProblem.solution.length}`);
+            
+            let solutionHtml = '<h4>Løsning:</h4>';
+            
+            // Handle simple string array format
+            const isStringArray = Array.isArray(currentProblem.solution) && 
+                                  currentProblem.solution.length > 0 && 
+                                  typeof currentProblem.solution[0] === 'string';
+            
+            if (isStringArray) {
+                log('   Rendering simple string solution:');
+                
+                currentProblem.solution.forEach((move, index) => {
+                    const moveNumber = Math.floor(index / 2) + 1;
+                    const isWhiteMove = index % 2 === 0;
+                    const movePrefix = isWhiteMove ? `${moveNumber}.` : `${moveNumber}...`;
+                    
+                    log(`      ${index + 1}. ${movePrefix} ${move}`);
+                    solutionHtml += `<p><span style="background:#007bff;color:#fff;padding:2px 8px;border-radius:3px;font-family:monospace;font-weight:bold;">${movePrefix} ${move}</span></p>`;
+                });
+            } else {
+                log('   Non-string array solution format');
+                solutionHtml += `<p>Løsning: ${JSON.stringify(currentProblem.solution)}</p>`;
+            }
+            
+            solutionElement.innerHTML = solutionHtml;
+            solutionElement.style.display = 'block';
+            solutionElement.style.visibility = 'visible';
+            
+            log(`   ✅ Solution displayed successfully`);
+            log(`📖 showSolution() END`);
+        }
+
+        function debugAnalyzeProblems() {
+            log(`🔬 debugAnalyzeProblems() START`);
+            
+            if (!currentProblem) {
+                log('❌ No problem loaded to analyze');
+                return;
+            }
+            
+            log(`🧩 Analyzing problem: ${currentProblem.id}`);
+            log(`   Title: ${currentProblem.title}`);
+            log(`   Theme: ${currentProblem.theme}`);
+            log(`   Difficulty: ${currentProblem.difficulty}`);
+            log(`   Rating: ${currentProblem.rating}`);
+            log(`   Points: ${currentProblem.points}`);
+            
+            // Check hint
+            if (currentProblem.hint) {
+                log(`   💡 Hint: "${currentProblem.hint}"`);
+            } else {
+                log(`   💡 No hint available`);
+            }
+            
+            log(`🔬 debugAnalyzeProblems() END`);
+        }
+
+        // Test functions
+        function testHintFunction() {
+            if (!currentProblem) {
+                log('⚠️ Please load a sample problem first');
+                return;
+            }
+            showHint();
+        }
+
+        function testSolutionFunction() {
+            if (!currentProblem) {
+                log('⚠️ Please load a sample problem first');
+                return;
+            }
+            showSolution();
+        }
+
+        function testDebugFunction() {
+            if (!currentProblem) {
+                log('⚠️ Please load a sample problem first');
+                return;
+            }
+            debugAnalyzeProblems();
+        }
+
+        // Initialize
+        log('🔧 Button Functionality Test loaded');
+        log('Click "Load Sample Problem" first, then test the other functions');
+    </script>
+</body>
+</html>
