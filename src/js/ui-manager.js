@@ -2,223 +2,383 @@
  * ChessHawk - UI Manager
  * 
  * Håndterer brukergrensesnitt, tilbakemeldinger og visuelle elementer
+ * Modernized with ES2024+ features and ES6 modules
  */
 
 /**
- * Vis løsningen for det nåværende problemet
+ * UIManager klasse for håndtering av brukergrensesnitt
  */
-function showSolution() {
-    console.log(`📖 === showSolution() START ===`);
-    console.log(`   🎯 Problem ID: ${currentProblem?.id || 'UNKNOWN'}`);
-    
-    if (!currentProblem) {
-        console.warn('⚠️  No current problem - cannot show solution');
-        showFeedback('Ingen problem lastet!', 'error');
-        return;
+class UIManager {
+    #feedbackTimer = null;
+    #notificationQueue = [];
+    #animationObserver = null;
+
+    constructor() {
+        console.log('🎨 UIManager initialized');
+        this.#initializeAnimationObserver();
     }
-    
-    const solutionElement = document.getElementById('solution');
-    if (!solutionElement) {
-        console.error('❌ Solution element not found in DOM');
-        return;
-    }
-    
-    console.log(`   🔍 Found solution element: ${solutionElement.id}`);
-    console.log(`   📝 Processing solution for problem ${currentProblem.id}:`);
-    console.log(`      Solution type: ${Array.isArray(currentProblem.solution) ? 'Array' : typeof currentProblem.solution}`);
-    console.log(`      Solution content:`, currentProblem.solution);
-    
-    let solutionHtml = `<h4>Løsning for ${currentProblem.title}:</h4>`;
-    
-    // Håndter forskjellige løsningsformater
-    if (typeof currentProblem.solution === 'string') {
-        console.log(`   📝 Rendering string solution for problem ${currentProblem.id}: "${currentProblem.solution}"`);
-        solutionHtml += `<p class="solution-move">${currentProblem.solution}</p>`;
-    } else if (Array.isArray(currentProblem.solution)) {
-        console.log(`   🔗 Rendering array solution for problem ${currentProblem.id}:`);
+
+    /**
+     * Vis tilbakemelding til brukeren
+     * @param {string} message - Meldingen som skal vises
+     * @param {string} type - Type tilbakemelding ('success', 'error', 'info', 'warning')
+     * @param {number} duration - Varighet i millisekunder (default: 3000)
+     */
+    showFeedback(message, type = 'info', duration = 3000) {
+        console.log(`💬 === showFeedback() ===`);
+        console.log(`   📝 Message: ${message}`);
+        console.log(`   🎨 Type: ${type}`);
         
-        // Enkel format - array av trekkstrenger
-        if (typeof currentProblem.solution[0] === 'string') {
-            currentProblem.solution.forEach((move, index) => {
-                const moveNumber = Math.floor(index / 2) + 1;
-                const isWhiteMove = index % 2 === 0;
-                const movePrefix = isWhiteMove ? `${moveNumber}.` : `${moveNumber}...`;
-                
-                console.log(`      ${index + 1}. ${movePrefix} ${move}`);
-                solutionHtml += `<p><span class="solution-move">${movePrefix} ${move}</span></p>`;
-            });
-        } else if (Array.isArray(currentProblem.solution)) {
-            console.log(`   🔗 Rendering complex object solution for problem ${currentProblem.id}:`);
+        const feedbackElement = document.getElementById('feedback');
+        if (!feedbackElement) {
+            console.error('❌ Feedback element not found');
+            return;
+        }
+        
+        // Clear previous timer
+        if (this.#feedbackTimer) {
+            clearTimeout(this.#feedbackTimer);
+        }
+        
+        // Update content and styling using modern template literals
+        feedbackElement.innerHTML = `
+            <div class="feedback-content ${type}">
+                <span class="feedback-icon">${this.#getIconForType(type)}</span>
+                <span class="feedback-text">${message}</span>
+            </div>
+        `;
+        
+        // Apply modern CSS classes
+        feedbackElement.className = `feedback ${type} show`;
+        feedbackElement.style.display = 'block';
+        
+        // Auto-hide after duration
+        if (duration > 0) {
+            this.#feedbackTimer = setTimeout(() => {
+                this.clearFeedback();
+            }, duration);
+        }
+        
+        console.log(`   ✅ Feedback displayed successfully`);
+    }
+
+    /**
+     * Tøm tilbakemeldingsområdet
+     */
+    clearFeedback() {
+        const feedbackElement = document.getElementById('feedback');
+        if (feedbackElement) {
+            feedbackElement.classList.add('fade-out');
             
-            // Komplekst format - array av løsningsobjekter med forklaringer
-            currentProblem.solution.forEach((sol, index) => {
+            // Use modern animation events
+            setTimeout(() => {
+                feedbackElement.style.display = 'none';
+                feedbackElement.className = 'feedback';
+                feedbackElement.innerHTML = '';
+            }, 300);
+        }
+        
+        if (this.#feedbackTimer) {
+            clearTimeout(this.#feedbackTimer);
+            this.#feedbackTimer = null;
+        }
+    }
+
+    /**
+     * Vis løsningen for det nåværende problemet
+     */
+    showSolution() {
+        console.log(`📖 === showSolution() START ===`);
+        console.log(`   🎯 Problem ID: ${window.currentProblem?.id || 'UNKNOWN'}`);
+        
+        if (!window.currentProblem) {
+            console.warn('⚠️  No current problem - cannot show solution');
+            this.showFeedback('Ingen problem lastet!', 'error');
+            return;
+        }
+        
+        const solutionElement = document.getElementById('solution');
+        if (!solutionElement) {
+            console.error('❌ Solution element not found in DOM');
+            return;
+        }
+        
+        console.log(`   🔍 Found solution element: ${solutionElement.id}`);
+        console.log(`   📝 Processing solution for problem ${window.currentProblem.id}:`);
+        console.log(`      Solution type: ${Array.isArray(window.currentProblem.solution) ? 'Array' : typeof window.currentProblem.solution}`);
+        console.log(`      Solution content:`, window.currentProblem.solution);
+        
+        // Build solution HTML using modern template literals and optional chaining
+        const solutionHTML = this.#buildSolutionHTML(window.currentProblem);
+        
+        solutionElement.innerHTML = solutionHTML;
+        solutionElement.style.display = 'block';
+        solutionElement.classList.add('solution-visible', 'fade-in');
+        
+        console.log(`📖 === showSolution() END ===`);
+    }
+
+    /**
+     * Tøm løsningsområdet
+     */
+    clearSolution() {
+        const solutionElement = document.getElementById('solution');
+        if (solutionElement) {
+            solutionElement.classList.add('fade-out');
+            
+            setTimeout(() => {
+                solutionElement.style.display = 'none';
+                solutionElement.innerHTML = '';
+                solutionElement.className = 'solution';
+            }, 300);
+        }
+    }
+
+    /**
+     * Oppdater spillstatus
+     * @param {string} status - Ny status
+     */
+    updateGameStatus(status) {
+        const statusElement = document.getElementById('status');
+        if (statusElement) {
+            statusElement.textContent = status;
+            statusElement.classList.add('status-updated');
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                statusElement.classList.remove('status-updated');
+            }, 500);
+        }
+        
+        console.log(`🎮 Status updated: ${status}`);
+    }
+
+    /**
+     * Vis notifikasjon med kø-støtte
+     * @param {string} message - Melding
+     * @param {Object} options - Tilleggsopsjoner
+     */
+    showNotification(message, options = {}) {
+        const notification = {
+            id: Date.now(),
+            message,
+            type: options.type || 'info',
+            duration: options.duration || 3000,
+            persistent: options.persistent || false
+        };
+        
+        this.#notificationQueue.push(notification);
+        this.#processNotificationQueue();
+    }
+
+    /**
+     * Oppdater UI elementer med problemdata
+     * @param {Object} problem - Problemdata
+     */
+    updateProblemDisplay(problem) {
+        if (!problem) return;
+        
+        // Use modern optional chaining and nullish coalescing
+        const updates = {
+            'problem-title': problem.title ?? 'Ukjent problem',
+            'problem-description': problem.description ?? '',
+            'category': problem.category ?? 'Ukjent',
+            'difficulty': problem.difficulty ?? 'Ukjent',
+            'rating': problem.rating?.toString() ?? 'N/A',
+            'points': problem.points?.toString() ?? '0'
+        };
+        
+        // Batch DOM updates
+        Object.entries(updates).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                element.classList.add('content-updated');
+                
+                // Remove animation class
+                setTimeout(() => {
+                    element.classList.remove('content-updated');
+                }, 300);
+            }
+        });
+        
+        // Update meta information
+        this.#updateProblemMeta(problem);
+    }
+
+    /**
+     * Toggle fullscreen mode
+     */
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                this.showFeedback(`Kunne ikke aktivere fullskjerm: ${err.message}`, 'error');
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    /**
+     * Vis achievement/badge
+     * @param {Object} achievement - Achievement data
+     */
+    showAchievement(achievement) {
+        const achievementHTML = `
+            <div class="achievement-popup" id="achievement-${achievement.id}">
+                <div class="achievement-content">
+                    <div class="achievement-icon">${achievement.icon || '🏆'}</div>
+                    <div class="achievement-text">
+                        <h3>${achievement.title}</h3>
+                        <p>${achievement.description}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Inject into page
+        document.body.insertAdjacentHTML('beforeend', achievementHTML);
+        
+        const popup = document.getElementById(`achievement-${achievement.id}`);
+        if (popup) {
+            popup.classList.add('show');
+            
+            // Auto-remove after delay
+            setTimeout(() => {
+                popup.classList.add('fade-out');
+                setTimeout(() => popup.remove(), 300);
+            }, 3000);
+        }
+    }
+
+    /**
+     * Privat metode for å bygge løsnings-HTML
+     */
+    #buildSolutionHTML(problem) {
+        let solutionHtml = `<h4>Løsning for ${problem.title}:</h4>`;
+        
+        if (Array.isArray(problem.solution)) {
+            console.log(`   📋 Array solution with ${problem.solution.length} moves`);
+            
+            // Format som nummererte trekk
+            const moves = problem.solution.map((move, index) => {
                 const moveNumber = Math.floor(index / 2) + 1;
                 const isWhiteMove = index % 2 === 0;
-                const movePrefix = isWhiteMove ? `${moveNumber}.` : `${moveNumber}...`;
-                
-                console.log(`      ${index + 1}. ${movePrefix} ${sol.move} - ${sol.explanation || 'Ingen forklaring'}`);
-                
-                solutionHtml += `<p><span class="solution-move">${movePrefix} ${sol.move}</span>`;
-                if (sol.explanation) {
-                    solutionHtml += ` - ${sol.explanation}`;
-                }
-                
-                if (sol.opponentResponse) {
-                    const oppMoveNumber = isWhiteMove ? moveNumber : moveNumber + 1;
-                    const oppMovePrefix = isWhiteMove ? `${moveNumber}...` : `${oppMoveNumber}.`;
-                    solutionHtml += `<br><span class="opponent-move">${oppMovePrefix} ${sol.opponentResponse}</span>`;
-                    if (sol.opponentExplanation) {
-                        solutionHtml += ` - ${sol.opponentExplanation}`;
+                const prefix = isWhiteMove ? `${moveNumber}.` : `${moveNumber}...`;
+                return `${prefix} ${move}`;
+            }).join(' ');
+            
+            solutionHtml += `
+                <div class="solution-moves">
+                    <strong>Trekkrekkefølge:</strong><br>
+                    <code class="moves-notation">${moves}</code>
+                </div>
+            `;
+        } else if (typeof problem.solution === 'string') {
+            solutionHtml += `
+                <div class="solution-text">
+                    <strong>Løsning:</strong><br>
+                    <code>${problem.solution}</code>
+                </div>
+            `;
+        }
+        
+        // Legg til problemdetaljer
+        solutionHtml += `
+            <div class="solution-details">
+                <span class="detail-item">📂 ${problem.category}</span>
+                <span class="detail-item">⭐ ${problem.difficulty}</span>
+                <span class="detail-item">📊 Rating: ${problem.rating}</span>
+                <span class="detail-item">💎 ${problem.points} poeng</span>
+            </div>
+        `;
+        
+        return solutionHtml;
+    }
+
+    /**
+     * Privat metode for å få ikon basert på type
+     */
+    #getIconForType(type) {
+        const icons = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️'
+        };
+        return icons[type] || 'ℹ️';
+    }
+
+    /**
+     * Privat metode for å oppdatere problem metadata
+     */
+    #updateProblemMeta(problem) {
+        const metaElement = document.getElementById('problem-meta');
+        if (metaElement) {
+            metaElement.innerHTML = `
+                <span class="category-badge ${problem.category}">${problem.category}</span>
+                <span class="difficulty-badge ${problem.difficulty}">${problem.difficulty}</span>
+                <span class="rating-badge">Rating: ${problem.rating}</span>
+                <span class="points-badge">💎 ${problem.points} poeng</span>
+            `;
+        }
+    }
+
+    /**
+     * Privat metode for å initialisere Intersection Observer for animasjoner
+     */
+    #initializeAnimationObserver() {
+        if ('IntersectionObserver' in window) {
+            this.#animationObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
                     }
-                }
-                solutionHtml += '</p>';
+                });
+            }, { threshold: 0.1 });
+            
+            // Observe elements that should animate
+            document.querySelectorAll('.problem-card, .control-panel, .game-info').forEach(el => {
+                this.#animationObserver.observe(el);
             });
         }
-    } else {
-        console.warn(`   ⚠️  Unknown solution format for problem ${currentProblem.id}:`, typeof currentProblem.solution);
-        solutionHtml += `<p>Løsning: ${JSON.stringify(currentProblem.solution)}</p>`;
     }
-    
-    console.log(`   📝 Generated solution HTML (${solutionHtml.length} chars):`, solutionHtml.substring(0, 100) + '...');
-    
-    // Sett innholdet
-    solutionElement.innerHTML = solutionHtml;
-    
-    // Vis løsningselementet
-    console.log(`   🎨 Showing solution element...`);
-    solutionElement.style.display = 'block';
-    solutionElement.style.visibility = 'visible';
-    solutionElement.classList.add('solution-visible');
-    
-    // Verifiser visning
-    const computedStyle = window.getComputedStyle(solutionElement);
-    console.log(`   ✅ Solution display verification:`);
-    console.log(`      Style display: ${solutionElement.style.display}`);
-    console.log(`      Computed display: ${computedStyle.display}`);
-    console.log(`      Style visibility: ${solutionElement.style.visibility}`);
-    console.log(`      Classes: ${solutionElement.className}`);
-    
-    console.log(`📖 === showSolution() END - Solution displayed for problem ${currentProblem.id} ===`);
-}
 
-/**
- * Skjul løsningsvisning
- */
-function hideSolution() {
-    const solutionElement = document.getElementById('solution');
-    if (solutionElement) {
-        solutionElement.style.display = 'none';
-        solutionElement.classList.remove('solution-visible');
-    }
-}
-
-/**
- * Vis tilbakemeldingsmelding
- * @param {string} message - Meldingen som skal vises
- * @param {string} type - Typen tilbakemelding (success, error, hint)
- */
-function showFeedback(message, type = 'success') {
-    console.log(`💬 === showFeedback() START ===`);
-    console.log(`   📝 Message: "${message}"`);
-    console.log(`   🎨 Type: ${type}`);
-    
-    const feedbackElement = document.getElementById('feedback');
-    if (!feedbackElement) {
-        console.error('❌ Feedback element not found');
-        return;
-    }
-    
-    // Sett innhold og stil
-    feedbackElement.textContent = message;
-    feedbackElement.className = `feedback ${type}`;
-    feedbackElement.style.display = 'block';
-    
-    console.log(`   ✅ Feedback displayed successfully`);
-    console.log(`   🎨 Element display style: ${feedbackElement.style.display}`);
-    console.log(`   🎨 Element classes: ${feedbackElement.className}`);
-}
-
-/**
- * Skjul tilbakemeldingsvisning
- */
-function hideFeedback() {
-    const feedbackElement = document.getElementById('feedback');
-    if (feedbackElement) {
-        feedbackElement.style.display = 'none';
-    }
-}
-
-/**
- * Oppdater knapptilstander basert på nåværende spilltilstand
- */
-function updateButtonStates() {
-    const checkBtn = document.getElementById('checkSolutionBtn');
-    const hintBtn = document.getElementById('getHintBtn');
-    const resetBtn = document.getElementById('resetPositionBtn');
-    
-    if (checkBtn) {
-        checkBtn.disabled = false;
-    }
-    
-    if (hintBtn) {
-        hintBtn.disabled = false;
-    }
-    
-    if (resetBtn) {
-        resetBtn.disabled = false;
-    }
-}
-
-/**
- * Oppdater poengsumvisning
- */
-function updateScore() {
-    const scoreElement = document.getElementById('score');
-    if (scoreElement) {
-        scoreElement.textContent = `Total poeng: ${playerScore}`;
-    }
-}
-
-/**
- * Veksle knapp aktivert/deaktivert tilstand
- * @param {boolean} enabled - Om knapper skal være aktivert
- */
-function toggleButtonsEnabled(enabled) {
-    console.log(`🔘 === toggleButtonsEnabled(${enabled}) START ===`);
-    
-    const buttons = [
-        { id: 'checkSolutionBtn', name: 'Check Solution' },
-        { id: 'getHintBtn', name: 'Get Hint' },
-        { id: 'resetPositionBtn', name: 'Reset Position' },
-        { id: 'newProblemBtn', name: 'New Problem' }
-    ];
-    
-    buttons.forEach(({ id, name }) => {
-        const button = document.getElementById(id);
-        if (button) {
-            button.disabled = !enabled;
-            console.log(`   ${enabled ? '✅' : '🔒'} ${name} button: ${enabled ? 'ENABLED' : 'DISABLED'}`);
-        } else {
-            console.warn(`   ⚠️  ${name} button not found in DOM`);
+    /**
+     * Privat metode for å prosessere notifikasjonskøen
+     */
+    #processNotificationQueue() {
+        if (this.#notificationQueue.length === 0) return;
+        
+        const notification = this.#notificationQueue.shift();
+        
+        // Show notification using existing feedback system
+        this.showFeedback(notification.message, notification.type, notification.duration);
+        
+        // Process next notification after delay
+        if (this.#notificationQueue.length > 0) {
+            setTimeout(() => this.#processNotificationQueue(), 500);
         }
-    });
-}
+    }
 
-// Rask testfunksjon for debugging
-function testSolutionDisplay() {
-    console.log('Testing solution display...');
-    const solutionElement = document.getElementById('solution');
-    if (solutionElement) {
-        solutionElement.innerHTML = '<h4>Test Løsning:</h4><p><span class="solution-move">Test Move</span> - Test explanation</p>';
-        solutionElement.style.display = 'block';
-        solutionElement.classList.add('solution-visible');
-        console.log('Test solution displayed');
-        console.log('Element styles:', {
-            display: solutionElement.style.display,
-            visibility: solutionElement.style.visibility,
-            classes: solutionElement.className
-        });
-    } else {
-        console.log('Solution element not found!');
+    /**
+     * Cleanup metode
+     */
+    destroy() {
+        if (this.#feedbackTimer) {
+            clearTimeout(this.#feedbackTimer);
+        }
+        
+        if (this.#animationObserver) {
+            this.#animationObserver.disconnect();
+        }
+        
+        this.#notificationQueue = [];
     }
 }
+
+// Export the class as default
+export default UIManager;
+
+// Expose to global scope for compatibility with existing code
+window.UIManager = UIManager;
