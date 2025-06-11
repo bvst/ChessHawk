@@ -1,4 +1,5 @@
-const fs = require('fs');
+import fs from 'fs';
+import path from 'path';
 
 console.log('=== VERIFISERING AV TAKTISK DATABASE ===\n');
 

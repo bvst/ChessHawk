@@ -23,8 +23,11 @@ coverage/
 # Bower dependency directory
 bower_components
 
-# node_modules (if we add Node.js later)
+# Node.js dependencies
 node_modules/
+
+# Build output directory
+dist/
 
 # Optional npm cache directory
 .npm
@@ -60,4 +63,3 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
-node_modules/

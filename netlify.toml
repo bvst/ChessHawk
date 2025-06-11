@@ -6,22 +6,8 @@
   publish = "dist"
 
 [build.environment]
-  # Node.js version (if needed)
+  # Node.js version
   NODE_VERSION = "18"
-
-# Redirect rules for production
-[[redirects]]
-  # Redirect root to production entry point
-  from = "/"
-  to = "/index-production.html"
-  status = 200
-
-[[redirects]]
-  # Handle any other HTML requests
-  from = "/*"
-  to = "/index-production.html"
-  status = 200
-  conditions = {file_type = "html"}
 
 # Headers for better performance
 [[headers]]

@@ -5,8 +5,8 @@
  * for production builds that don't use node_modules
  */
 
-import { copyFileSync, mkdirSync, existsSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { copyFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'fs';
+import { resolve, dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -76,6 +76,65 @@ for (const lib of libraries) {
     }
 }
 
+// Copy and rename HTML file for production
+console.log('\n📄 Setting up production HTML...');
+try {
+    const htmlSource = resolve(projectRoot, 'index-production.html');
+    const htmlDest = resolve(projectRoot, 'dist/index.html');
+    
+    if (existsSync(htmlSource)) {
+        copyFileSync(htmlSource, htmlDest);
+        console.log('✅ HTML: index-production.html → dist/index.html');
+    } else {
+        console.log('⚠️  index-production.html not found, will be handled by Vite build');
+    }
+} catch (error) {
+    console.log('⚠️  HTML copy failed, will be handled by Vite build:', error.message);
+}
+
+// Copy source files that HTML references
+console.log('\n📁 Copying source files...');
+
+function copyDirectory(source, destination) {
+    if (!existsSync(source)) {
+        return false;
+    }
+    
+    mkdirSync(destination, { recursive: true });
+    
+    const files = readdirSync(source);
+    
+    for (const file of files) {
+        const sourcePath = join(source, file);
+        const destPath = join(destination, file);
+        
+        if (statSync(sourcePath).isDirectory()) {
+            copyDirectory(sourcePath, destPath);
+        } else {
+            copyFileSync(sourcePath, destPath);
+        }
+    }
+    
+    return true;
+}
+
+const sourceDirs = [
+    { from: 'src/css', to: 'dist/src/css' },
+    { from: 'src/data', to: 'dist/src/data' },
+    { from: 'src/img', to: 'dist/src/img' }
+];
+
+for (const dir of sourceDirs) {
+    const sourceDir = resolve(projectRoot, dir.from);
+    const destDir = resolve(projectRoot, dir.to);
+    
+    if (copyDirectory(sourceDir, destDir)) {
+        console.log(`✅ Copied: ${dir.from} → ${dir.to}`);
+    } else {
+        console.log(`⚠️  Source directory not found: ${dir.from}`);
+    }
+}
+
 console.log(`\n📊 Copy Summary:`);
 console.log(`   ✅ Successfully copied: ${copiedCount} libraries`);
 console.log(`   ❌ Failed to copy: ${errorCount} libraries`);
@@ -85,7 +144,7 @@ if (errorCount === 0) {
     console.log('\n📋 Next steps:');
     console.log('   1. Run: npm run build:prod-bundle');
     console.log('   2. Deploy the dist/ folder to your production server');
-    console.log('   3. Use index-production.html as your production entry point');
+    console.log('   3. Netlify will automatically serve dist/index.html');
 } else {
     console.log('\n⚠️  Some libraries failed to copy. Check the errors above.');
     console.log('   Make sure all dependencies are installed: npm install');
