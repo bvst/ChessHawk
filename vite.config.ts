@@ -15,8 +15,17 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
+        production: 'index-production.html',
         test: 'test-basic-load.html'
-      }
+      },
+      output: {
+        // Create a single bundle for production
+        manualChunks: undefined,
+        entryFileNames: 'chess-hawk.min.js',
+        chunkFileNames: 'chess-hawk-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      },
+      external: ['jquery', 'chess.js', '@chrisoakman/chessboardjs']
     }
   },
   

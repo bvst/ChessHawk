@@ -6,13 +6,21 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:production": "npm run build:prod-bundle && npm run build:copy-libs",
+    "build:prod-bundle": "vite build --mode production --config vite.config.production.ts",
+    "build:copy-libs": "node scripts/copy-production-libs.js",
     "preview": "vite preview",
+    "preview:production": "npm run build:production && python3 -m http.server 8080 --directory dist",
     "start": "npm run dev",
     "serve": "npm run preview",
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "lint": "eslint . --ext ts,js,tsx,jsx --report-unused-disable-directives --max-warnings 0"
+    "test:run": "vitest run",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "lint": "eslint . --ext ts,js,tsx,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,js,tsx,jsx --fix"
   },
   "keywords": [
     "chess",

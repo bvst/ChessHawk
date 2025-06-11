@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ChessHawk</title>
+    <meta name="description" content="ChessHawk - En sjakktrening app som utfordrer deg med både taktikk og strategi">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♗</text></svg>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="src/lib/chessboard.min.css">
+    <link rel="stylesheet" href="src/css/base.css">
+    <link rel="stylesheet" href="src/css/chessboard.css">
+    <link rel="stylesheet" href="src/css/ui.css">
+    <link rel="stylesheet" href="src/css/responsive.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="logo">♗</div>
+        <h1>Chess Hawk</h1>
+        <p>Se det store bildet. Stuper ned med presisjon.</p>
+    </header>
+    
+    <!-- Main Game Area -->
+    <main>
+        <!-- Chess Board Container -->
+        <section class="chess-container">
+            <div id="myBoard" style="width: 400px"></div>
+        </section>
+        
+        <!-- Progress Indicator -->
+        <section class="progress">
+            <h4>Progresjon</h4>
+            <div class="score" id="score">Total poeng: 0</div>
+        </section>
+        
+        <!-- Problem Information Panel -->
+        <section class="problem-info">
+            <h3 id="problemTitle">Velkommen til ChessHawk!</h3>
+            <p id="problemDescription">Klikk "Nytt Problem" for å starte din første utfordring.</p>
+            
+            <!-- Problem Meta Information -->
+            <div class="problem-meta">
+                <span id="category" class="badge category">Kategori</span>
+                <span id="problemDifficulty" class="badge difficulty-beginner">Beginner</span>
+                <span id="problemPoints" class="badge points">10 poeng</span>
+            </div>
+            
+            <!-- Problem Controls -->
+            <div class="problem-controls">
+                <button id="newProblemBtn" class="btn primary">Nytt Problem</button>
+                <button id="checkSolutionBtn" class="btn success" disabled>Sjekk Løsning</button>
+                <button id="getHintBtn" class="btn warning" disabled>Hint</button>
+                <button id="resetPositionBtn" class="btn secondary" disabled>Reset Posisjon</button>
+                <button id="debugShowSolution" class="btn secondary">Debug: Vis Løsning</button>
+                <button id="debugAnalyzeProblems" class="btn secondary">Debug: Analyser Problemer</button>
+            </div>
+            
+            <!-- Feedback Display -->
+            <div class="feedback" id="feedback"></div>
+            
+            <!-- Solution Display -->
+            <div class="solution" id="solution"></div>
+        </section>
+        
+        <!-- Game Information Panel -->
+        <section class="game-info">
+            <h3>Status</h3>
+            <div class="status" id="status">Hvit sin tur</div>
+        </section>
+    </main>
+
+    <!-- JavaScript Libraries - Production Mode -->
+    <script src="src/lib/jquery.min.js"></script>
+    <script src="src/lib/chess.min.js"></script>
+    <script src="src/lib/chessboard.min.js"></script>
+    
+    <!-- ChessHawk Application - Production Bundle -->
+    <script type="module" src="src/js/chess-hawk-production.ts"></script>
+</body>
+</html>

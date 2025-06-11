@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Hawk - Production Test</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="src/lib/chessboard.min.css">
+    <link rel="stylesheet" href="src/css/base.css">
+    <link rel="stylesheet" href="src/css/chessboard.css">
+    <link rel="stylesheet" href="src/css/ui.css">
+    <link rel="stylesheet" href="src/css/responsive.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">♗</div>
+        <h1>Chess Hawk - Production Test</h1>
+        <p>Testing production mode with script tags</p>
+    </header>
+    
+    <main>
+        <section class="chess-container">
+            <div id="myBoard" style="width: 400px"></div>
+        </section>
+        
+        <section class="problem-info">
+            <h3 id="problemTitle">Production Mode Test</h3>
+            <p id="problemDescription">Testing production build...</p>
+            
+            <div class="problem-controls">
+                <button id="newProblemBtn" class="btn primary">New Problem</button>
+                <button id="debugShowSolution" class="btn secondary">Show Solution</button>
+            </div>
+            
+            <div class="feedback" id="feedback"></div>
+            <div class="solution" id="solution"></div>
+        </section>
+        
+        <section class="game-info">
+            <div class="status" id="status">Testing...</div>
+        </section>
+    </main>
+
+    <!-- Production Libraries -->
+    <script src="src/lib/jquery.min.js"></script>
+    <script src="src/lib/chess.min.js"></script>
+    <script src="src/lib/chessboard.min.js"></script>
+    
+    <!-- Production Bundle -->
+    <script src="dist/chess-hawk.min.js"></script>
+    
+    <script>
+        // Test that everything loaded correctly
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Production Test Status:');
+            console.log('   jQuery:', typeof $ !== 'undefined' ? '✅' : '❌');
+            console.log('   Chess.js:', typeof Chess !== 'undefined' ? '✅' : '❌');
+            console.log('   Chessboard.js:', typeof Chessboard !== 'undefined' ? '✅' : '❌');
+            console.log('   ChessHawk App:', typeof window.chessHawk !== 'undefined' ? '✅' : '❌');
+            
+            // Update status
+            const statusEl = document.getElementById('status');
+            if (statusEl) {
+                const allLoaded = typeof $ !== 'undefined' && 
+                               typeof Chess !== 'undefined' && 
+                               typeof Chessboard !== 'undefined' &&
+                               typeof window.chessHawk !== 'undefined';
+                
+                statusEl.textContent = allLoaded ? 
+                    '✅ Production mode working!' : 
+                    '❌ Some components failed to load';
+            }
+        });
+    </script>
+</body>
+</html>
