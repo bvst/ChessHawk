@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Hawk - TypeScript Tests</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.css">
+    <link rel="stylesheet" href="src/css/base.css">
+    <link rel="stylesheet" href="src/css/ui.css">
+    
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+        .test-result.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-result.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .test-controls {
+            margin: 20px 0;
+        }
+        .test-controls button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        .test-controls button:hover {
+            background-color: #0056b3;
+        }
+        #myBoard {
+            width: 300px;
+            margin: 20px auto;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 3px;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Chess Hawk TypeScript Tests</h1>
+        <p>This page tests the TypeScript modules and their functionality.</p>
+        
+        <div class="test-controls">
+            <button onclick="runAllTests()">Run All Tests</button>
+            <button onclick="clearResults()">Clear Results</button>
+            <button onclick="testLibraryLoading()">Test Library Loading</button>
+            <button onclick="testModuleLoading()">Test Module Loading</button>
+            <button onclick="testChessGlobal()">Test Chess.js Integration</button>
+            <button onclick="testBoardManager()">Test Board Manager</button>
+            <button onclick="testProblemManager()">Test Problem Manager</button>
+        </div>
+        
+        <div id="test-results"></div>
+        
+        <div class="test-section">
+            <h3>Chess Board (for testing)</h3>
+            <div id="myBoard"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Feedback Area (for UI testing)</h3>
+            <div id="feedback"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Solution Area (for UI testing)</h3>
+            <div id="solution"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Status Area (for UI testing)</h3>
+            <div id="status">Ready for testing</div>
+        </div>
+        
+        <!-- Hidden elements for testing -->
+        <div style="display: none;">
+            <div id="category">test-category</div>
+            <div id="difficulty">test-difficulty</div>
+            <div id="rating">1500</div>
+            <div id="points">25</div>
+            <div id="problem-title">Test Problem</div>
+            <div id="problem-description">Test Description</div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries (same as main app) -->
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js"></script>
+    
+    <!-- Test Script -->
+    <script type="module">
+        // Import TypeScript modules for testing
+        import { Chess, createChessGame } from './src/js/chess-global.ts';
+        import CoreManager from './src/js/core-manager.ts';
+        import BoardManager from './src/js/board-manager.ts';
+        import ProblemManager from './src/js/problem-manager.ts';
+        import GameLogic from './src/js/game-logic.ts';
+        import UIManager from './src/js/ui-manager.ts';
+        import DebugTools from './src/js/debug-tools.ts';
+        
+        // Global test state
+        window.testResults = [];
+        window.testModules = {
+            Chess,
+            createChessGame,
+            CoreManager,
+            BoardManager,
+            ProblemManager,
+            GameLogic,
+            UIManager,
+            DebugTools
+        };
+        
+        // Test utility functions
+        function addTestResult(testName, status, message, details = null) {
+            const result = {
+                testName,
+                status,
+                message,
+                details,
+                timestamp: new Date().toISOString()
+            };
+            
+            window.testResults.push(result);
+            
+            const resultElement = document.createElement('div');
+            resultElement.className = `test-result ${status}`;
+            resultElement.innerHTML = `
+                <strong>${status.toUpperCase()}: ${testName}</strong><br>
+                ${message}
+                ${details ? `<div class="code-block">${JSON.stringify(details, null, 2)}</div>` : ''}
+            `;
+            
+            document.getElementById('test-results').appendChild(resultElement);
+            console.log(`[TEST ${status.toUpperCase()}] ${testName}: ${message}`, details || '');
+        }
+        
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+            window.testResults = [];
+            console.log('🧹 Test results cleared');
+        }
+        
+        // Library Loading Tests
+        function testLibraryLoading() {
+            addTestResult('Library Loading', 'info', 'Testing required JavaScript libraries...');
+            
+            // Test jQuery
+            if (typeof $ !== 'undefined' && typeof jQuery !== 'undefined') {
+                addTestResult('jQuery', 'success', 'jQuery loaded successfully', { version: $.fn.jquery });
+            } else {
+                addTestResult('jQuery', 'error', 'jQuery not loaded');
+            }
+            
+            // Test Chess.js (global)
+            if (typeof window.Chess !== 'undefined') {
+                try {
+                    const testGame = new window.Chess();
+                    addTestResult('Chess.js Global', 'success', 'Chess.js loaded and functional', { 
+                        fen: testGame.fen(),
+                        turn: testGame.turn()
+                    });
+                } catch (error) {
+                    addTestResult('Chess.js Global', 'error', 'Chess.js loaded but not functional', error.message);
+                }
+            } else {
+                addTestResult('Chess.js Global', 'error', 'Chess.js not found in global scope');
+            }
+            
+            // Test Chessboard.js
+            if (typeof window.Chessboard !== 'undefined') {
+                addTestResult('Chessboard.js', 'success', 'Chessboard.js loaded successfully');
+            } else {
+                addTestResult('Chessboard.js', 'error', 'Chessboard.js not loaded');
+            }
+        }
+        
+        // Module Loading Tests
+        function testModuleLoading() {
+            addTestResult('Module Loading', 'info', 'Testing TypeScript module imports...');
+            
+            const modules = [
+                { name: 'Chess (from chess-global)', obj: Chess },
+                { name: 'createChessGame', obj: createChessGame },
+                { name: 'CoreManager', obj: CoreManager },
+                { name: 'BoardManager', obj: BoardManager },
+                { name: 'ProblemManager', obj: ProblemManager },
+                { name: 'GameLogic', obj: GameLogic },
+                { name: 'UIManager', obj: UIManager },
+                { name: 'DebugTools', obj: DebugTools }
+            ];
+            
+            modules.forEach(({ name, obj }) => {
+                if (obj !== undefined) {
+                    addTestResult(`Module: ${name}`, 'success', 'Module imported successfully', {
+                        type: typeof obj,
+                        isClass: obj.prototype !== undefined
+                    });
+                } else {
+                    addTestResult(`Module: ${name}`, 'error', 'Module import failed');
+                }
+            });
+        }
+        
+        // Chess.js Integration Tests
+        function testChessGlobal() {
+            addTestResult('Chess Integration', 'info', 'Testing Chess.js TypeScript integration...');
+            
+            try {
+                // Test direct Chess import
+                if (Chess) {
+                    const game1 = new Chess();
+                    addTestResult('Chess Constructor', 'success', 'Chess constructor works from import', {
+                        fen: game1.fen(),
+                        turn: game1.turn()
+                    });
+                } else {
+                    addTestResult('Chess Constructor', 'error', 'Chess not available from import');
+                }
+                
+                // Test createChessGame helper
+                if (createChessGame) {
+                    const game2 = createChessGame();
+                    addTestResult('createChessGame Helper', 'success', 'Helper function works', {
+                        fen: game2.fen(),
+                        turn: game2.turn()
+                    });
+                } else {
+                    addTestResult('createChessGame Helper', 'error', 'createChessGame function not available');
+                }
+                
+                // Test custom FEN
+                const customFen = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1';
+                const game3 = createChessGame(customFen);
+                if (game3.fen() === customFen) {
+                    addTestResult('Custom FEN', 'success', 'Custom FEN loading works', { fen: game3.fen() });
+                } else {
+                    addTestResult('Custom FEN', 'error', 'Custom FEN loading failed');
+                }
+                
+            } catch (error) {
+                addTestResult('Chess Integration', 'error', 'Chess integration test failed', error.message);
+            }
+        }
+        
+        // Board Manager Tests
+        function testBoardManager() {
+            addTestResult('Board Manager', 'info', 'Testing BoardManager TypeScript class...');
+            
+            try {
+                const boardManager = new BoardManager();
+                addTestResult('BoardManager Creation', 'success', 'BoardManager instance created');
+                
+                // Test board initialization
+                try {
+                    const board = boardManager.initializeBoard();
+                    if (board) {
+                        addTestResult('Board Initialization', 'success', 'Chessboard initialized successfully');
+                        
+                        // Test position update
+                        const testFen = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1';
+                        boardManager.updatePosition(testFen);
+                        addTestResult('Position Update', 'success', 'Board position updated', { fen: testFen });
+                        
+                        // Test orientation
+                        boardManager.setBoardOrientation('w');
+                        addTestResult('Board Orientation', 'success', 'Board orientation set to white');
+                        
+                    } else {
+                        addTestResult('Board Initialization', 'error', 'Board initialization returned null');
+                    }
+                } catch (error) {
+                    addTestResult('Board Initialization', 'error', 'Board initialization failed', error.message);
+                }
+                
+            } catch (error) {
+                addTestResult('Board Manager', 'error', 'BoardManager creation failed', error.message);
+            }
+        }
+        
+        // Problem Manager Tests
+        function testProblemManager() {
+            addTestResult('Problem Manager', 'info', 'Testing ProblemManager TypeScript class...');
+            
+            try {
+                const problemManager = new ProblemManager();
+                addTestResult('ProblemManager Creation', 'success', 'ProblemManager instance created');
+                
+                // Test fallback data
+                const fallbackProblems = problemManager.problems;
+                addTestResult('Initial Problems', 'info', `Initial problems count: ${fallbackProblems.length}`);
+                
+                // Test problem loading (this will likely fail due to CORS, but we can test the method)
+                problemManager.loadProblems()
+                    .then(problems => {
+                        addTestResult('Problem Loading', 'success', `Loaded ${problems.length} problems`, {
+                            count: problems.length,
+                            first: problems[0]
+                        });
+                    })
+                    .catch(error => {
+                        addTestResult('Problem Loading', 'info', 'Expected error due to file loading in test environment', error.message);
+                    });
+                
+            } catch (error) {
+                addTestResult('Problem Manager', 'error', 'ProblemManager creation failed', error.message);
+            }
+        }
+        
+        // UI Manager Tests
+        function testUIManager() {
+            addTestResult('UI Manager', 'info', 'Testing UIManager TypeScript class...');
+            
+            try {
+                const uiManager = new UIManager();
+                addTestResult('UIManager Creation', 'success', 'UIManager instance created');
+                
+                // Test feedback display
+                uiManager.showFeedback('Test feedback message', 'success', 2000);
+                addTestResult('Feedback Display', 'success', 'Feedback message displayed');
+                
+                // Test status update
+                uiManager.updateGameStatus('Testing status update');
+                addTestResult('Status Update', 'success', 'Status updated');
+                
+                // Test problem display
+                const testProblem = {
+                    id: 'test-1',
+                    title: 'Test Problem',
+                    description: 'Test Description',
+                    category: 'test-category',
+                    difficulty: 'beginner',
+                    rating: 1200,
+                    points: 10,
+                    fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+                    solution: ['e4', 'e5', 'Nf3'],
+                    type: 'tactic'
+                };
+                
+                uiManager.updateProblemDisplay(testProblem);
+                addTestResult('Problem Display', 'success', 'Problem display updated');
+                
+            } catch (error) {
+                addTestResult('UI Manager', 'error', 'UIManager test failed', error.message);
+            }
+        }
+        
+        // Game Logic Tests
+        function testGameLogic() {
+            addTestResult('Game Logic', 'info', 'Testing GameLogic TypeScript class...');
+            
+            try {
+                const gameLogic = new GameLogic();
+                addTestResult('GameLogic Creation', 'success', 'GameLogic instance created');
+                
+                // Initialize with a test game
+                window.game = new Chess();
+                gameLogic.initializeGame();
+                
+                if (gameLogic.initialized) {
+                    addTestResult('GameLogic Initialization', 'success', 'GameLogic initialized');
+                } else {
+                    addTestResult('GameLogic Initialization', 'error', 'GameLogic not initialized');
+                }
+                
+                // Test move validation
+                const isValid = gameLogic.isValidMove('e4');
+                addTestResult('Move Validation', 'success', `Move validation result: ${isValid}`);
+                
+            } catch (error) {
+                addTestResult('Game Logic', 'error', 'GameLogic test failed', error.message);
+            }
+        }
+        
+        // Debug Tools Tests
+        function testDebugTools() {
+            addTestResult('Debug Tools', 'info', 'Testing DebugTools TypeScript class...');
+            
+            try {
+                const debugTools = new DebugTools();
+                addTestResult('DebugTools Creation', 'success', 'DebugTools instance created');
+                
+                // Test export game data
+                const gameData = debugTools.exportGameData();
+                addTestResult('Export Game Data', 'success', 'Game data exported', gameData);
+                
+            } catch (error) {
+                addTestResult('Debug Tools', 'error', 'DebugTools test failed', error.message);
+            }
+        }
+        
+        // Run all tests
+        function runAllTests() {
+            clearResults();
+            addTestResult('Test Suite', 'info', 'Starting comprehensive TypeScript tests...');
+            
+            testLibraryLoading();
+            testModuleLoading();
+            testChessGlobal();
+            testBoardManager();
+            testProblemManager();
+            testUIManager();
+            testGameLogic();
+            testDebugTools();
+            
+            addTestResult('Test Suite', 'info', 'All tests completed. Check results above.');
+        }
+        
+        // Expose functions globally for button clicks
+        window.runAllTests = runAllTests;
+        window.clearResults = clearResults;
+        window.testLibraryLoading = testLibraryLoading;
+        window.testModuleLoading = testModuleLoading;
+        window.testChessGlobal = testChessGlobal;
+        window.testBoardManager = testBoardManager;
+        window.testProblemManager = testProblemManager;
+        window.testUIManager = testUIManager;
+        window.testGameLogic = testGameLogic;
+        window.testDebugTools = testDebugTools;
+        
+        // Auto-run basic tests when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 TypeScript Test Page Loaded');
+            setTimeout(() => {
+                testLibraryLoading();
+                testModuleLoading();
+                testChessGlobal();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

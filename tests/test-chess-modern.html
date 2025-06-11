@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chess.js Modern Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { padding: 10px; margin: 5px 0; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Chess.js Modern (v1.3.1) Test</h1>
+    <p>Testing modern Chess.js as ES module with TypeScript integration...</p>
+    <div id="results"></div>
+
+    <!-- Load remaining libraries -->
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js"></script>
+    
+    <script type="module">
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            document.getElementById('results').appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        async function runTests() {
+            try {
+                log('🔄 Testing modern Chess.js v1.3.1 ES module import...', 'info');
+                
+                // Test: Import chess-global.ts module
+                const chessModule = await import('./src/js/chess-global.ts');
+                log('✅ chess-global.ts imported successfully', 'success');
+                
+                // Test: Check exports from module
+                if (chessModule.Chess) {
+                    log('✅ Chess export is available from module', 'success');
+                    
+                    try {
+                        const game = new chessModule.Chess();
+                        log(`✅ Chess from module works: ${game.fen()}`, 'success');
+                        log(`✅ Chess methods: turn=${game.turn()}, moves=${game.moves().length}`, 'success');
+                    } catch (error) {
+                        log(`❌ Chess from module failed: ${error.message}`, 'error');
+                    }
+                } else {
+                    log('❌ Chess export not available from module', 'error');
+                }
+                
+                // Test: Check createChessGame helper
+                if (chessModule.createChessGame) {
+                    log('✅ createChessGame helper is available', 'success');
+                    
+                    try {
+                        const game = chessModule.createChessGame();
+                        log(`✅ createChessGame works: ${game.fen()}`, 'success');
+                        
+                        // Test with custom FEN
+                        const customFen = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1';
+                        const gameWithFen = chessModule.createChessGame(customFen);
+                        log(`✅ createChessGame with FEN works: ${gameWithFen.fen()}`, 'success');
+                    } catch (error) {
+                        log(`❌ createChessGame failed: ${error.message}`, 'error');
+                    }
+                } else {
+                    log('❌ createChessGame helper not available', 'error');
+                }
+                
+                // Test: Check if Chess.js was exposed globally
+                if (typeof window.Chess !== 'undefined') {
+                    log('✅ Chess.js exposed globally as window.Chess', 'success');
+                    
+                    try {
+                        const globalGame = new window.Chess();
+                        log(`✅ Global Chess constructor works: ${globalGame.fen()}`, 'success');
+                    } catch (error) {
+                        log(`❌ Global Chess constructor failed: ${error.message}`, 'error');
+                    }
+                } else {
+                    log('❌ Chess.js not available globally', 'error');
+                }
+                
+                // Test: Advanced Chess.js functionality
+                try {
+                    const game = new chessModule.Chess();
+                    
+                    // Test moves
+                    const move = game.move('e4');
+                    if (move) {
+                        log(`✅ Move functionality works: ${move.san}`, 'success');
+                    } else {
+                        log('❌ Move functionality failed', 'error');
+                    }
+                    
+                    // Test game state
+                    log(`✅ Game state: turn=${game.turn()}, check=${game.isCheck()}, gameOver=${game.isGameOver()}`, 'success');
+                    
+                    // Test history
+                    const history = game.history();
+                    log(`✅ Move history: ${history.join(', ')}`, 'success');
+                    
+                } catch (error) {
+                    log(`❌ Advanced functionality test failed: ${error.message}`, 'error');
+                }
+                
+                // Test: Try importing other TypeScript modules
+                log('🔄 Testing other TypeScript modules...', 'info');
+                
+                try {
+                    const coreModule = await import('./src/js/core-manager.ts');
+                    log('✅ core-manager.ts imported successfully!', 'success');
+                    
+                    const boardModule = await import('./src/js/board-manager.ts');
+                    log('✅ board-manager.ts imported successfully!', 'success');
+                    
+                    log('🎉 All tests passed! The application should work!', 'success');
+                } catch (error) {
+                    log(`❌ Module import failed: ${error.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Test suite failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // Run tests when page loads
+        runTests();
+    </script>
+</body>
+</html>

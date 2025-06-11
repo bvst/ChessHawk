@@ -8,7 +8,7 @@
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♗</text></svg>">    <!-- CSS -->
-    <link rel="stylesheet" href="src/lib/chessboard.min.css">
+    <link rel="stylesheet" href="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.css">
     <link rel="stylesheet" href="src/css/base.css">
     <link rel="stylesheet" href="src/css/chessboard.css">
     <link rel="stylesheet" href="src/css/ui.css">
@@ -39,6 +39,7 @@
             
             <!-- Problem Meta Information -->
             <div class="problem-meta">
+                <span id="category" class="badge category">Kategori</span>
                 <span id="problemDifficulty" class="badge difficulty-beginner">Beginner</span>
                 <span id="problemPoints" class="badge points">10 poeng</span>
             </div>            <!-- Problem Controls -->
@@ -63,11 +64,11 @@
             <h3>Status</h3>
             <div class="status" id="status">Hvit sin tur</div>
         </section>
-    </main>    <!-- JavaScript Libraries -->
-    <script src="src/lib/jquery.min.js"></script>
-    <script src="src/lib/chess.min.js"></script>
-    <script src="src/lib/chessboard.min.js"></script>
-      <!-- ChessHawk Application - ES6 Module System -->
-    <script type="module" src="src/js/core-manager.js"></script>
+    </main>    <!-- JavaScript Libraries from npm -->
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js"></script>
+    
+    <!-- ChessHawk Application - TypeScript Module System -->
+    <script type="module" src="src/js/core-manager.ts"></script>
 </body>
 </html>
