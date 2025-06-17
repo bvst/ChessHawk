@@ -12,7 +12,13 @@
       "Bash(npm run dev:*)",
       "Bash(npx vite:*)",
       "Bash(curl:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(chmod:*)",
+      "Bash(docker:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(./scripts/docker-dev.sh:*)",
+      "Bash(ss:*)"
     ],
     "deny": []
   }

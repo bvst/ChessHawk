@@ -17,15 +17,25 @@ npm install
 
 ### Server Setup
 ```bash
-# Start development server (REQUIRED for proper operation)
-# This script automatically checks and installs npm dependencies
-./start-server.sh
+# Docker-based development (RECOMMENDED for cross-platform consistency)
+# Start development server with hot reload
+npm run docker:dev
+# Access app at http://localhost:5173
 
-# Alternative manual start:
+# Start test environment with Vitest UI
+npm run docker:test
+# Access test UI at http://localhost:51737
+
+# Start production build
+npm run docker:prod
+# Access app at http://localhost:8080
+
+# Traditional development server
+./start-server.sh
+# Or manually:
 npm start
 # Or directly:
 python3 -m http.server 8000
-
 # Access app at http://localhost:8000
 
 # IMPORTANT: file:// protocol causes CORS issues
@@ -34,6 +44,14 @@ python3 -m http.server 8000
 
 ### Testing
 ```bash
+# Docker-based testing (RECOMMENDED)
+# Run tests with Vitest UI
+npm run docker:test
+
+# Run headless tests for CI/CD
+npm run docker:test-run
+
+# Traditional testing
 # Test sequence (run in order for debugging):
 # 1. Basic functionality: http://localhost:8000/test-basic-load.html
 # 2. Simple validation: http://localhost:8000/test-simple.html  
@@ -43,6 +61,11 @@ python3 -m http.server 8000
 
 # Legacy test files in tests/ directory:
 # http://localhost:8000/tests/test-complete.html
+
+# Unit tests with Vitest
+npm run test:ui    # Test UI
+npm run test:coverage  # Coverage report
+npm run test:run   # Headless run
 ```
 
 ### Database Management

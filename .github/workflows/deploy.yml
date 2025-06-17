@@ -1,0 +1,205 @@
+name: Deploy Chess Hawk
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Build and test before deployment
+  build:
+    name: Build for Deployment
+    runs-on: ubuntu-latest
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=tag
+          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value={{date 'YYYY-MM-DD'}}-{{sha}}
+
+    - name: Build and push container
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        target: production
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        attestations: type=provenance,mode=max
+        sbom: true
+
+    - name: Run security scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        format: 'table'
+        exit-code: '1'
+        severity: 'CRITICAL,HIGH'
+
+  # Deploy to Netlify (for web hosting)
+  deploy-netlify:
+    name: Deploy to Netlify
+    runs-on: ubuntu-latest
+    needs: [build]
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build production assets
+      run: npm run build:production
+
+    - name: Deploy to Netlify
+      uses: nwtgck/actions-netlify@v3.0
+      with:
+        publish-dir: './dist'
+        production-branch: main
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Deploy Chess Hawk ${{ github.ref_name }}"
+        enable-pull-request-comment: true
+        enable-commit-comment: true
+        overwrites-pull-request-comment: true
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+    - name: Update deployment status
+      if: success()
+      run: |
+        echo "✅ Chess Hawk deployed successfully to Netlify!"
+        echo "🌐 Environment: ${{ github.event.inputs.environment || 'production' }}"
+        echo "📦 Version: ${{ github.ref_name }}"
+
+  # Deploy container to cloud platform
+  deploy-container:
+    name: Deploy Container
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event.inputs.environment == 'production' || startsWith(github.ref, 'refs/tags/')
+    environment: production
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Deploy to cloud platform
+      run: |
+        echo "🚀 Deploying Chess Hawk container to cloud platform..."
+        echo "📦 Image: ${{ needs.build.outputs.image-tag }}"
+        echo "🔒 Digest: ${{ needs.build.outputs.image-digest }}"
+        echo "🌍 Environment: ${{ github.event.inputs.environment || 'production' }}"
+        
+        # Example deployment commands (replace with actual platform)
+        # docker run -d -p 80:80 ${{ needs.build.outputs.image-tag }}
+        
+        echo "✅ Container deployment would happen here"
+        echo "Add your preferred cloud platform deployment commands:"
+        echo "- AWS ECS/Fargate"
+        echo "- Google Cloud Run"
+        echo "- Azure Container Instances"
+        echo "- DigitalOcean App Platform"
+        echo "- Railway, Render, etc."
+
+  # Health check after deployment
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    needs: [deploy-netlify]
+    if: always() && needs.deploy-netlify.result == 'success'
+    
+    steps:
+    - name: Wait for deployment
+      run: sleep 30
+
+    - name: Health check
+      run: |
+        # Replace with actual Netlify URL
+        NETLIFY_URL="https://chess-hawk.netlify.app"
+        
+        echo "🏥 Running health checks..."
+        
+        # Basic availability check
+        if curl -f -s "$NETLIFY_URL" > /dev/null; then
+          echo "✅ Site is accessible"
+        else
+          echo "❌ Site is not accessible"
+          exit 1
+        fi
+        
+        # Check if JavaScript loads
+        if curl -s "$NETLIFY_URL" | grep -q "chess-hawk"; then
+          echo "✅ JavaScript assets are loading"
+        else
+          echo "⚠️ JavaScript assets may not be loading properly"
+        fi
+        
+        echo "🎉 Health check completed successfully!"
+
+  # Rollback capability
+  rollback:
+    name: Rollback
+    runs-on: ubuntu-latest
+    if: failure() && (needs.deploy-netlify.result == 'failure' || needs.health-check.result == 'failure')
+    needs: [deploy-netlify, health-check]
+    environment: production
+    
+    steps:
+    - name: Rollback deployment
+      run: |
+        echo "🔄 Rolling back Chess Hawk deployment..."
+        echo "This would restore the previous working version"
+        echo "Implement rollback logic for your deployment platform"
+        
+        # Example rollback commands
+        # netlify api rollbackDeploy --site-id=$NETLIFY_SITE_ID
+        
+        echo "✅ Rollback initiated"

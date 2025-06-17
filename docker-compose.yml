@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Development environment
+  chess-hawk-dev:
+    build:
+      context: .
+      target: development
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    profiles:
+      - dev
+    restart: unless-stopped
+
+  # Testing environment with UI
+  chess-hawk-test:
+    build:
+      context: .
+      target: testing
+    ports:
+      - "51737:51737"  # Vitest UI
+      - "4173:4173"    # Preview server for testing
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+    profiles:
+      - test
+    restart: unless-stopped
+
+  # Production environment
+  chess-hawk-prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - "8090:80"
+    environment:
+      - NODE_ENV=production
+    profiles:
+      - prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Test runner (headless testing)
+  chess-hawk-test-runner:
+    build:
+      context: .
+      target: testing
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+    command: ["npm", "run", "test:coverage"]
+    profiles:
+      - test-ci
+    restart: "no"
+
+  # Database service (for future use)
+  chess-hawk-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: chesshawk
+      POSTGRES_USER: chesshawk
+      POSTGRES_PASSWORD: chesshawk_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    profiles:
+      - db
+    restart: unless-stopped
+
+  # Redis cache (for future use)
+  chess-hawk-cache:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    profiles:
+      - cache
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: chess-hawk-network

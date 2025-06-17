@@ -9,6 +9,12 @@ export default defineConfig({
     // Global setup
     globals: true,
     
+    // UI configuration for Docker
+    ui: {
+      host: '0.0.0.0',
+      port: 51737
+    },
+    
     // Test file patterns
     include: [
       'src/**/*.test.ts',

@@ -1,15 +1,65 @@
+# Netlify configuration for Chess Hawk
+# Optimized for container-based build process
+
 [build]
-  # Build command to run
+  # Build command that uses our production build system
   command = "npm run build:production"
   
-  # Directory to publish (output directory)
+  # Directory to serve (output from our build process)
   publish = "dist"
+  
+  # Environment variables for build
+  environment = { NODE_VERSION = "18", NODE_ENV = "production" }
 
-[build.environment]
-  # Node.js version
-  NODE_VERSION = "18"
+[build.processing]
+  # Skip Netlify's processing since we handle optimization ourselves
+  skip_processing = false
+  
+[build.processing.css]
+  # We handle CSS optimization in our build process
+  bundle = true
+  minify = true
 
-# Headers for better performance
+[build.processing.js]
+  # We handle JS optimization in our build process  
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  # Enable HTML optimization
+  pretty_urls = true
+  
+[build.processing.images]
+  # Optimize images
+  compress = true
+
+# Serve the dist folder with proper headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'"
+
+# Cache static assets
+[[headers]]
+  for = "/lib/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/src/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/src/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 [[headers]]
   for = "*.js"
   [headers.values]
@@ -25,3 +75,40 @@
   [headers.values]
     Cache-Control = "public, max-age=3600"
     Access-Control-Allow-Origin = "*"
+
+# API routes for future use
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# SPA routing - serve index.html for all routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Functions configuration (for future serverless functions)
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Dev server configuration
+[dev]
+  command = "npm run dev"
+  port = 5173
+  publish = "dist"
+  autoLaunch = true
+
+# Build context for different branches
+[context.production]
+  command = "npm run build:production"
+  environment = { NODE_ENV = "production" }
+
+[context.deploy-preview]
+  command = "npm run build:production"
+  environment = { NODE_ENV = "production" }
+
+[context.branch-deploy]
+  command = "npm run build"
+  environment = { NODE_ENV = "development" }
