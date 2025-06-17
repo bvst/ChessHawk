@@ -16,7 +16,7 @@ export default defineConfig({
       input: {
         main: 'index.html',
         production: 'index-production.html',
-        test: 'test-basic-load.html'
+        testProd: 'test-production.html'
       },
       output: {
         // Create a single bundle for production
