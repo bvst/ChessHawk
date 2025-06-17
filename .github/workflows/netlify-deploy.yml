@@ -1,0 +1,234 @@
+name: Deploy to Netlify
+
+on:
+  # Trigger on pushes to main branch
+  push:
+    branches: [ main ]
+  
+  # Trigger on successful completion of CI pipeline
+  workflow_run:
+    workflows: ["Chess Hawk CI/CD Pipeline"]
+    types:
+      - completed
+    branches: [ main ]
+  
+  # Allow manual deployment
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - preview
+      deploy_message:
+        description: 'Custom deployment message'
+        required: false
+        default: ''
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Only run if CI passed (for workflow_run trigger) or for direct triggers
+  check-ci-status:
+    name: Check CI Status
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+    
+    steps:
+    - name: Check if deployment should proceed
+      id: check
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+          if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+        fi
+
+  # Build and deploy to Netlify
+  deploy:
+    name: Build and Deploy to Netlify
+    runs-on: ubuntu-latest
+    needs: check-ci-status
+    if: needs.check-ci-status.outputs.should-deploy == 'true'
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run tests before deployment
+      run: npm run test:run
+
+    - name: Build production assets
+      run: npm run build:production
+      env:
+        NODE_ENV: production
+
+    - name: Optimize build output
+      run: |
+        echo "📦 Build completed. Checking output..."
+        ls -la dist/
+        echo "📊 Build size analysis:"
+        du -sh dist/*
+
+    - name: Deploy to Netlify
+      id: netlify-deploy
+      uses: nwtgck/actions-netlify@v3.0
+      with:
+        publish-dir: './dist'
+        production-branch: main
+        production-deploy: ${{ github.ref == 'refs/heads/main' && github.event.inputs.environment != 'preview' }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: ${{ github.event.inputs.deploy_message || format('Deploy Chess Hawk {0} - {1}', github.ref_name, github.sha) }}
+        enable-pull-request-comment: true
+        enable-commit-comment: true
+        overwrites-pull-request-comment: true
+        github-deployment-environment: ${{ github.event.inputs.environment || 'production' }}
+        github-deployment-description: "Chess Hawk deployment via GitHub Actions"
+        alias: ${{ github.event.inputs.environment == 'preview' && format('preview-{0}', github.run_number) || '' }}
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+    - name: Update deployment status
+      if: success()
+      run: |
+        echo "✅ Chess Hawk deployed successfully to Netlify!"
+        echo "🌐 Environment: ${{ github.event.inputs.environment || 'production' }}"
+        echo "📦 Version: ${{ github.ref_name }} (${{ github.sha }})"
+        echo "🔗 Deploy URL: ${{ steps.netlify-deploy.outputs.deploy-url }}"
+        if [[ "${{ steps.netlify-deploy.outputs.production-url }}" != "" ]]; then
+          echo "🚀 Production URL: ${{ steps.netlify-deploy.outputs.production-url }}"
+        fi
+
+    - name: Comment deployment URL on commit
+      if: success() && github.event_name == 'push'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const deployUrl = '${{ steps.netlify-deploy.outputs.deploy-url }}';
+          const prodUrl = '${{ steps.netlify-deploy.outputs.production-url }}';
+          const environment = '${{ github.event.inputs.environment || 'production' }}';
+          
+          let comment = `🚀 **Chess Hawk Deployed Successfully!**\n\n`;
+          comment += `📦 **Environment:** ${environment}\n`;
+          comment += `🔗 **Deploy URL:** ${deployUrl}\n`;
+          
+          if (prodUrl && environment === 'production') {
+            comment += `🌐 **Production URL:** ${prodUrl}\n`;
+          }
+          
+          comment += `\n⏰ **Deployed at:** ${new Date().toISOString()}`;
+          
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: comment
+          });
+
+  # Health check after deployment
+  health-check:
+    name: Post-Deployment Health Check
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+    
+    steps:
+    - name: Wait for deployment to propagate
+      run: sleep 30
+
+    - name: Health check deployment
+      run: |
+        # Get the deploy URL from the previous job
+        DEPLOY_URL="${{ needs.deploy.outputs.deploy-url || 'https://chess-hawk.netlify.app' }}"
+        
+        echo "🏥 Running health checks on: $DEPLOY_URL"
+        
+        # Basic availability check
+        if curl -f -s --max-time 30 "$DEPLOY_URL" > /dev/null; then
+          echo "✅ Site is accessible"
+        else
+          echo "❌ Site is not accessible"
+          exit 1
+        fi
+        
+        # Check if main assets load
+        if curl -s --max-time 30 "$DEPLOY_URL" | grep -q "Chess Hawk\|chess-hawk"; then
+          echo "✅ Main content is loading"
+        else
+          echo "⚠️ Main content may not be loading properly"
+        fi
+        
+        # Check if CSS is loading
+        if curl -s --max-time 30 "$DEPLOY_URL" | grep -q "stylesheet\|\.css"; then
+          echo "✅ CSS assets are referenced"
+        else
+          echo "⚠️ CSS assets may not be loading"
+        fi
+        
+        # Check if JavaScript is loading
+        if curl -s --max-time 30 "$DEPLOY_URL" | grep -q "script\|\.js"; then
+          echo "✅ JavaScript assets are referenced"
+        else
+          echo "⚠️ JavaScript assets may not be loading"
+        fi
+        
+        echo "🎉 Health check completed successfully!"
+
+  # Cleanup on failure
+  cleanup-on-failure:
+    name: Cleanup on Deployment Failure
+    runs-on: ubuntu-latest
+    needs: [deploy, health-check]
+    if: failure()
+    
+    steps:
+    - name: Notify deployment failure
+      run: |
+        echo "❌ Chess Hawk deployment failed!"
+        echo "🔍 Check the logs above for specific error details"
+        echo "💡 Common issues to check:"
+        echo "   - Netlify auth token and site ID are correctly set"
+        echo "   - Build process completed successfully"
+        echo "   - All required environment variables are available"
+        echo "   - No syntax errors in the built files"
+
+    - name: Create failure issue comment
+      if: github.event_name == 'push'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const comment = `❌ **Chess Hawk Deployment Failed**\n\n`;
+          comment += `The deployment to Netlify failed for commit ${context.sha}.\n`;
+          comment += `Please check the [workflow logs](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.\n\n`;
+          comment += `🔍 **Common fixes:**\n`;
+          comment += `- Verify Netlify secrets are correctly configured\n`;
+          comment += `- Check for build errors in the logs\n`;
+          comment += `- Ensure all dependencies are properly installed\n`;
+          
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: comment
+          });
