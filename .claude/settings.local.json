@@ -18,7 +18,8 @@
       "Bash(docker:*)",
       "Bash(npm run test:run:*)",
       "Bash(./scripts/docker-dev.sh:*)",
-      "Bash(ss:*)"
+      "Bash(ss:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
