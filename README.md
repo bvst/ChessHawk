@@ -80,32 +80,39 @@ chess-hawk/
 
 ## 🛠️ Utility Scripts
 
-### Database Management
+### Modern TypeScript Scripts
 ```bash
-# Generer ny database (kjør fra scripts/)
-node generate-full-database.js
+# Analyser puzzle kvalitet
+npm run analyze
 
-# Valider database
-node verify-database.js
+# Import fra Lichess API (TypeScript)
+npm run import:lichess
 
-# Batch import fra Lichess
-node batch-import.js
+# Export analyse resultater
+npm run analyze:export
 ```
 
-### Puzzle Import
+### Legacy Database Management
 ```bash
-# Import fra Lichess API
+# Gamle JavaScript scripts (kjør fra scripts/)
+node generate-full-database.js
+node verify-database.js
+node batch-import.js
 node import-puzzles-fixed.js
 ```
 
 ## 🔧 Teknisk Stack
 
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Frontend**: HTML5, CSS3, TypeScript (ES6+)
+- **State Management**: Zustand for modern reactive state
 - **Sjakk Engine**: chess.js for spillogikk
 - **UI**: chessboard.js for interaktivt brett
+- **Build System**: Vite + TypeScript
+- **Testing**: Vitest + Coverage
 - **Mobile**: Touch event håndtering og CSS optimalisering
-- **Database**: JSON-basert puzzle database
+- **Database**: JSON-basert puzzle database med service layer abstraction
 - **Server**: Python HTTP server (development)
+- **Deployment**: Docker + GitHub Actions + Netlify
 
 ## 📱 Mobile Support
 
