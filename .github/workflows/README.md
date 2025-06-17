@@ -59,7 +59,7 @@ Add these secrets in your GitHub repository settings:
 
 ```
 NETLIFY_AUTH_TOKEN    # Your Netlify personal access token
-NETLIFY_SITE_ID       # Your Netlify site ID
+NETLIFY_PROJECT_ID    # Your Netlify project ID
 ```
 
 ### Getting Netlify Secrets
@@ -69,10 +69,10 @@ NETLIFY_SITE_ID       # Your Netlify site ID
    - Applications → Personal access tokens
    - Generate new token
 
-2. **NETLIFY_SITE_ID:**
+2. **NETLIFY_PROJECT_ID:**
    - Go to your site in Netlify dashboard
    - Site settings → General → Site information
-   - Copy the Site ID
+   - Copy the Site ID (now called Project ID)
 
 ## Deployment Environments
 
@@ -103,8 +103,8 @@ All deployments include:
    - Check `NETLIFY_AUTH_TOKEN` secret
    - Verify token has correct permissions
 
-2. **Site ID not found**
-   - Verify `NETLIFY_SITE_ID` secret
+2. **Project ID not found**
+   - Verify `NETLIFY_PROJECT_ID` secret
    - Check site exists in your Netlify account
 
 3. **Build failures**

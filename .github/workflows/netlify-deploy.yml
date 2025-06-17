@@ -107,7 +107,7 @@ jobs:
         alias: ${{ github.event.inputs.environment == 'preview' && format('preview-{0}', github.run_number) || '' }}
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PROJECT_ID }}
 
     - name: Update deployment status
       if: success()
@@ -208,7 +208,7 @@ jobs:
         echo "❌ Chess Hawk deployment failed!"
         echo "🔍 Check the logs above for specific error details"
         echo "💡 Common issues to check:"
-        echo "   - Netlify auth token and site ID are correctly set"
+        echo "   - Netlify auth token and project ID are correctly set"
         echo "   - Build process completed successfully"
         echo "   - All required environment variables are available"
         echo "   - No syntax errors in the built files"
