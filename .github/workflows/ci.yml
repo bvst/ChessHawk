@@ -199,11 +199,55 @@ jobs:
     - name: Stop container
       run: docker stop chess-hawk-perf
 
+  # Branch preview deployment (for non-main branches)
+  deploy-preview:
+    name: Deploy Branch Preview
+    runs-on: ubuntu-latest
+    needs: [test, build-check]
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build production assets
+      run: npm run build:production
+
+    - name: Deploy branch preview to Netlify
+      uses: nwtgck/actions-netlify@v3.0
+      with:
+        publish-dir: './dist'
+        production-branch: main
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Preview deployment for branch ${{ github.ref_name }}"
+        enable-pull-request-comment: true
+        enable-commit-comment: true
+        overwrites-pull-request-comment: true
+        alias: ${{ github.ref_name }}
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PROJECT_ID }}
+
+    - name: Comment deployment URL
+      run: |
+        echo "🌐 Branch preview deployed!"
+        echo "📱 URL: https://${{ github.ref_name }}--chess-hawk.netlify.app"
+        echo "🔗 Alternative: Check Netlify deploy comment for exact URL"
+
   # Notification
   notify:
     name: Notification
     runs-on: ubuntu-latest
-    needs: [test, build-check, build, security, deploy-staging, performance]
+    needs: [test, build-check, build, security, deploy-staging, performance, deploy-preview]
     if: always()
     
     steps:
@@ -217,6 +261,7 @@ jobs:
         echo "🛡️ Security: ${{ needs.security.result || 'SKIPPED' }}"
         echo "🚀 Deploy: ${{ needs.deploy-staging.result || 'SKIPPED' }}"
         echo "⚡ Performance: ${{ needs.performance.result || 'SKIPPED' }}"
+        echo "🌐 Preview: ${{ needs.deploy-preview.result || 'SKIPPED' }}"
 
     - name: Notify failure
       if: ${{ needs.test.result == 'failure' || needs.build-check.result == 'failure' || needs.build.result == 'failure' }}
