@@ -2,7 +2,7 @@ name: Chess Hawk CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, 'fix/**', 'feature/**', 'feat/**' ]
   pull_request:
     branches: [ main ]
 
