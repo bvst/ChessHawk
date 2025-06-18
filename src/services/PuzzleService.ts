@@ -82,6 +82,9 @@ export class LocalPuzzleService implements IPuzzleService {
 
     try {
       const response = await fetch('/src/data/problems.json');
+      if (!response || !response.ok) {
+        throw new Error(`Failed to fetch puzzle data: ${response?.status || 'Unknown error'}`);
+      }
       const data = await response.json();
       
       if (data.puzzles && Array.isArray(data.puzzles)) {
@@ -664,3 +667,31 @@ export class PuzzleServiceFactory {
 
 // Default service instance
 export const puzzleService = PuzzleServiceFactory.createLocalService();
+
+// Export configuration types
+export interface PuzzleServiceConfig {
+  type: 'local' | 'api';
+  baseUrl?: string;
+  apiKey?: string;
+}
+
+export interface UserProgressData {
+  puzzlesSolved: string[];
+  totalTime: number;
+  averageRating: number;
+  streaks: {
+    current: number;
+    best: number;
+  };
+  themeProgress: Record<string, {
+    solved: number;
+    total: number;
+    averageRating: number;
+  }>;
+}
+
+export interface ExportedUserData {
+  progress?: UserProgress;
+  settings?: Record<string, unknown>;
+  exportedAt?: string;
+}

@@ -518,3 +518,6 @@ export const useBoardState = () => {
     orientation: state.settings.boardOrientation
   }));
 };
+
+// Re-export types for external use
+export type { UserProgress, UserStats, ThemeProgress, PuzzleFilter, SolutionResult };

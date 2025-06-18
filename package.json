@@ -5,24 +5,29 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/chess-hawk.es.js",
-      "require": "./dist/chess-hawk.umd.js",
-      "types": "./src/types/chess-hawk.d.ts"
-    },
-    "./components": "./dist/components/index.js",
-    "./services": "./dist/services/index.js"
+      "import": "./dist/lib/chess-hawk.es.js",
+      "require": "./dist/lib/chess-hawk.umd.js",
+      "types": "./dist/lib/index.d.ts"
+    }
   },
+  "main": "./dist/lib/chess-hawk.umd.js",
+  "module": "./dist/lib/chess-hawk.es.js",
+  "types": "./dist/lib/index.d.ts",
   "files": [
-    "dist",
-    "src/types"
+    "dist/lib",
+    "dist/types.d.ts",
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:lib": "vite build --mode lib",
+    "build:lib": "vite build --config vite.config.lib.ts",
+    "build:web": "vite build",
     "build:production": "npm run build:prod-bundle && npm run build:copy-libs",
     "build:prod-bundle": "vite build --mode production --config vite.config.production.ts",
     "build:copy-libs": "tsx scripts/copy-production-libs.ts",
+    "build:all": "npm run build:lib && npm run build:web",
     "preview": "vite preview",
     "preview:production": "npm run build:production && python3 -m http.server 8080 --directory dist",
     "start": "npm run dev",
@@ -67,12 +72,13 @@
     "@types/jquery": "^3.5.29",
     "@types/node": "^24.0.0",
     "@vitejs/plugin-legacy": "^5.2.0",
+    "@vitest/coverage-v8": "^1.2.2",
+    "@vitest/ui": "^1.2.2",
     "tsx": "^4.7.0",
     "typescript": "^5.8.3",
     "vite": "^5.4.19",
-    "vitest": "^1.2.2",
-    "@vitest/ui": "^1.2.2",
-    "@vitest/coverage-v8": "^1.2.2"
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^1.2.2"
   },
   "engines": {
     "node": ">=18.0.0",
