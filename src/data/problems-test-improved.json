@@ -1,0 +1,41 @@
+{
+  "version": "3.1",
+  "generated": "2025-06-18T19:09:40.056Z",
+  "totalPuzzles": 1,
+  "source": "Lichess API (Robust Import)",
+  "importMethod": "daily + id_patterns",
+  "stats": {
+    "attempted": 1,
+    "successful": 1,
+    "failed": 0,
+    "duplicates": 0,
+    "errors": []
+  },
+  "puzzles": [
+    {
+      "id": "lichess_uQ3nK",
+      "theme": "short",
+      "title": "Kort kombinasjon (1845)",
+      "description": "Løs denne korte taktiske kombinasjonen",
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "solution": [
+        "a7h7",
+        "h5g4",
+        "h7h4"
+      ],
+      "difficulty": "advanced",
+      "rating": 1845,
+      "points": 43,
+      "hint": "Dette løses med få, men presise trekk",
+      "tags": [
+        "short",
+        "advanced",
+        "endgame",
+        "mateIn2"
+      ],
+      "source": "Lichess",
+      "lichessUrl": "https://lichess.org/training/uQ3nK",
+      "createdAt": "2025-06-18T19:09:40.055Z"
+    }
+  ]
+}
