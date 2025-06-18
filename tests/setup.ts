@@ -46,6 +46,9 @@ global.document.getElementById = vi.fn()
 global.document.createElement = vi.fn()
 global.document.addEventListener = vi.fn()
 
+// Mock fetch globally
+global.fetch = vi.fn()
+
 // Reset all mocks before each test
 beforeEach(() => {
   vi.clearAllMocks()

@@ -25,8 +25,10 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+// Use the global localStorage mock and extend it
+Object.defineProperty(global, 'localStorage', {
+  value: localStorageMock,
+  writable: true
 });
 
 const mockPuzzleData = {

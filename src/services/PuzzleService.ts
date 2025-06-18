@@ -74,7 +74,7 @@ export class LocalPuzzleService implements IPuzzleService {
   private isInitialized = false;
 
   constructor() {
-    this.initialize();
+    // Don't auto-initialize - let callers control when to initialize
   }
 
   private async initialize(): Promise<void> {
