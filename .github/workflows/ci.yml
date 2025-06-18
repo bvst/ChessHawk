@@ -30,6 +30,7 @@ jobs:
         context: .
         target: testing
         tags: chess-hawk:test
+        load: true
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
