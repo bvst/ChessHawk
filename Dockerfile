@@ -48,6 +48,7 @@ RUN npm ci
 # Copy only necessary source files for testing
 COPY src/ ./src/
 COPY tests/ ./tests/
+COPY scripts/ ./scripts/
 COPY tsconfig.json ./
 COPY vitest.config.ts ./
 COPY vite.config.ts ./
