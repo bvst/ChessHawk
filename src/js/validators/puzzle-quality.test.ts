@@ -7,12 +7,15 @@ import type { Puzzle } from '../../types/chess-hawk';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-describe('Puzzle Database Quality Tests', () => {
+describe('Legacy Puzzle Database Quality Tests (problems.json)', () => {
   let puzzleData: { puzzles: Puzzle[] };
   
   beforeAll(() => {
     const dataPath = join(__dirname, '../../data/problems.json');
     puzzleData = JSON.parse(readFileSync(dataPath, 'utf8'));
+    
+    console.warn('⚠️ Testing LEGACY database (problems.json) - known quality issues documented');
+    console.warn('✅ For high-quality puzzles, see lichess-quality.test.ts');
   });
 
   describe('Basic Requirements', () => {
