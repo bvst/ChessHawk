@@ -65,7 +65,7 @@ interface ValidationStats {
 type ThemeKey = 'fork' | 'pin' | 'skewer' | 'mateIn1' | 'mateIn2' | 'mate' | 'sacrifice' | 'deflection' | 'decoy' | 'discoveredAttack';
 
 class QualityLichessImporter {
-  private readonly apiUrl = 'https://lichess.org/api/puzzle/batch';
+  private readonly dbUrl = 'https://database.lichess.org/lichess_db_puzzle.csv.zst';
   private importedPuzzles: ChessHawkPuzzle[] = [];
   
   private readonly norwegianThemes: Record<ThemeKey, string> = {
@@ -90,7 +90,142 @@ class QualityLichessImporter {
   };
 
   /**
-   * Fetch puzzles from Lichess API with error handling
+   * Download and process Lichess puzzle database
+   */
+  async downloadPuzzleDatabase(): Promise<string> {
+    console.log('📥 Downloading Lichess puzzle database...');
+    console.log('⚠️  This is a large file (~500MB compressed, ~2GB uncompressed)');
+    console.log('🔗 Source: https://database.lichess.org/');
+    
+    const dbPath = path.join(process.cwd(), 'puzzle-database.csv.zst');
+    
+    return new Promise((resolve, reject) => {
+      const file = fs.createWriteStream(dbPath);
+      
+      const req = https.get(this.dbUrl, (res) => {
+        console.log(`📊 Response status: ${res.statusCode}`);
+        
+        if (res.statusCode !== 200) {
+          reject(new Error(`Failed to download: ${res.statusCode} ${res.statusMessage}`));
+          return;
+        }
+        
+        const totalSize = parseInt(res.headers['content-length'] || '0', 10);
+        let downloadedSize = 0;
+        
+        res.on('data', (chunk) => {
+          downloadedSize += chunk.length;
+          if (totalSize > 0) {
+            const percent = ((downloadedSize / totalSize) * 100).toFixed(1);
+            process.stdout.write(`\r💾 Downloaded: ${percent}%`);
+          }
+        });
+        
+        res.pipe(file);
+        
+        file.on('finish', () => {
+          console.log('\n✅ Database downloaded successfully');
+          console.log(`📁 Location: ${dbPath}`);
+          console.log('🔧 To decompress: zstd -d puzzle-database.csv.zst');
+          resolve(dbPath);
+        });
+      });
+      
+      req.on('error', (error) => {
+        console.error(`❌ Download failed: ${error.message}`);
+        reject(error);
+      });
+    });
+  }
+
+  /**
+   * Parse puzzles from CSV data
+   */
+  parsePuzzlesFromCSV(csvData: string, theme?: string, limit: number = 100): LichessPuzzle[] {
+    console.log(`📊 Parsing puzzles from CSV data...`);
+    
+    const lines = csvData.split('\n');
+    const puzzles: LichessPuzzle[] = [];
+    let processed = 0;
+    
+    // Skip header line
+    for (let i = 1; i < lines.length && puzzles.length < limit; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      processed++;
+      if (processed % 10000 === 0) {
+        console.log(`📊 Processed ${processed} lines, found ${puzzles.length} matching puzzles...`);
+      }
+      
+      try {
+        // CSV format: PuzzleId,FEN,Moves,Rating,RatingDeviation,Popularity,NbPlays,Themes,GameUrl,OpeningTags
+        const columns = this.parseCSVLine(line);
+        if (columns.length < 8) continue;
+        
+        const [puzzleId, fen, moves, rating, ratingDeviation, popularity, nbPlays, themes] = columns;
+        
+        // Filter by theme if specified
+        if (theme && !themes.toLowerCase().includes(theme.toLowerCase())) {
+          continue;
+        }
+        
+        // Convert CSV format to our expected format
+        const puzzle: LichessPuzzle = {
+          puzzle: {
+            id: puzzleId,
+            solution: moves.split(' '),
+            themes: themes.split(' '),
+            rating: parseInt(rating, 10)
+          },
+          game: {
+            pgn: '', // Will be generated from FEN
+            id: puzzleId
+          }
+        };
+        
+        // Add FEN to puzzle object for easier access
+        (puzzle as any).fen = fen;
+        
+        puzzles.push(puzzle);
+        
+      } catch (error) {
+        // Skip malformed lines silently
+        continue;
+      }
+    }
+    
+    console.log(`✅ Parsed ${puzzles.length} puzzles from ${processed} lines`);
+    return puzzles;
+  }
+  
+  /**
+   * Parse CSV line handling quoted fields
+   */
+  private parseCSVLine(line: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    result.push(current);
+    return result;
+  }
+
+  /**
+   * Fetch puzzles from downloaded database or fallback
    */
   async fetchPuzzles(
     count = 100, 
@@ -98,61 +233,34 @@ class QualityLichessImporter {
     minRating = 1000, 
     maxRating = 2500
   ): Promise<LichessPuzzle[]> {
-    return new Promise((resolve, reject) => {
-      let url = `${this.apiUrl}?nb=${count}`;
-      
-      if (theme) {
-        url += `&themes=${theme}`;
-      }
-      
-      console.log(`📡 Fetching ${count} puzzles from Lichess...`);
-      console.log(`🔗 URL: ${url}`);
-      
-      const options: https.RequestOptions = {
-        headers: {
-          'User-Agent': 'ChessHawk-Quality-Importer/3.0',
-          'Accept': 'application/json'
-        },
-        timeout: 30000
-      };
-      
-      const req = https.get(url, options, (res) => {
-        let data = '';
-        
-        console.log(`📊 Response status: ${res.statusCode}`);
-        
-        if (res.statusCode !== 200) {
-          reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
-          return;
-        }
-        
-        res.on('data', (chunk: Buffer) => {
-          data += chunk.toString();
-        });
-        
-        res.on('end', () => {
-          try {
-            const result: { puzzles: LichessPuzzle[] } = JSON.parse(data);
-            console.log(`✅ Received ${result.puzzles?.length || 0} puzzles`);
-            resolve(result.puzzles || []);
-          } catch (error) {
-            console.error('❌ Failed to parse JSON response');
-            reject(error);
-          }
-        });
-      });
-      
-      req.on('error', (error: Error) => {
-        console.error(`❌ Request failed: ${error.message}`);
-        reject(error);
-      });
-      
-      req.on('timeout', () => {
-        console.error('❌ Request timeout');
-        req.destroy();
-        reject(new Error('Request timeout'));
-      });
-    });
+    console.log(`📡 Fetching ${count} puzzles with theme: ${theme || 'any'}...`);
+    
+    // Check if decompressed CSV exists
+    const csvPath = path.join(process.cwd(), 'puzzle-database.csv');
+    
+    if (fs.existsSync(csvPath)) {
+      console.log('📂 Using local puzzle database...');
+      const csvData = fs.readFileSync(csvPath, 'utf-8');
+      return this.parsePuzzlesFromCSV(csvData, theme || undefined, count);
+    }
+    
+    // Check if compressed file exists
+    const zstPath = path.join(process.cwd(), 'puzzle-database.csv.zst');
+    if (fs.existsSync(zstPath)) {
+      console.log('🔧 Found compressed database. Please decompress first:');
+      console.log('   zstd -d puzzle-database.csv.zst');
+      throw new Error('Database is compressed. Please decompress with: zstd -d puzzle-database.csv.zst');
+    }
+    
+    // No local database found - show instructions
+    console.log('❌ No local puzzle database found.');
+    console.log('💡 To download and use the complete Lichess puzzle database:');
+    console.log('   1. Install zstd: sudo apt install zstd (Ubuntu) or brew install zstd (macOS)');
+    console.log('   2. Run download: node scripts/quality-lichess-import.ts --download');
+    console.log('   3. Decompress: zstd -d puzzle-database.csv.zst');
+    console.log('   4. Run import again');
+    
+    throw new Error('No puzzle database available. Use --download to get the database first.');
   }
 
   /**
@@ -194,10 +302,9 @@ class QualityLichessImporter {
    */
   private convertPuzzle(lichessPuzzle: LichessPuzzle, theme: string): ChessHawkPuzzle {
     const puzzle = lichessPuzzle.puzzle;
-    const game = lichessPuzzle.game;
     
-    // Extract FEN from PGN (simplified - get position before solution)
-    const fen = this.extractFenFromPgn(game.pgn, puzzle.solution.length);
+    // Use FEN from CSV data if available, otherwise use default
+    const fen = (lichessPuzzle as any).fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
     
     // Map difficulty from rating
     const difficulty: ChessHawkPuzzle['difficulty'] = 
@@ -418,18 +525,31 @@ class QualityLichessImporter {
 // Main execution
 async function main(): Promise<void> {
   const importer = new QualityLichessImporter();
+  const args = process.argv.slice(2);
   
   try {
-    // Test connection first
-    console.log('🔍 Testing Lichess API connection...');
-    const testPuzzles = await importer.fetchPuzzles(5);
-    
-    if (testPuzzles.length === 0) {
-      console.error('❌ No puzzles received from Lichess API. Check connectivity.');
+    // Handle download option
+    if (args.includes('--download')) {
+      console.log('🚀 Starting Lichess puzzle database download...');
+      const dbPath = await importer.downloadPuzzleDatabase();
+      console.log(`\n✅ Download completed: ${dbPath}`);
+      console.log('📝 Next steps:');
+      console.log('   1. Install zstd if not available: sudo apt install zstd (Ubuntu) or brew install zstd (macOS)');
+      console.log('   2. Decompress: zstd -d puzzle-database.csv.zst');
+      console.log('   3. Run import: npm run import:lichess');
       return;
     }
     
-    console.log(`✅ API connection successful. Received ${testPuzzles.length} test puzzles.`);
+    // Test puzzle fetching
+    console.log('🔍 Testing puzzle database access...');
+    const testPuzzles = await importer.fetchPuzzles(5);
+    
+    if (testPuzzles.length === 0) {
+      console.error('❌ No puzzles available.');
+      return;
+    }
+    
+    console.log(`✅ Database access successful. Found ${testPuzzles.length} test puzzles.`);
     
     // Proceed with full import
     const allPuzzles = await importer.importAllThemes();
@@ -441,7 +561,7 @@ async function main(): Promise<void> {
       console.log(`📁 Backup of old data available`);
       console.log(`\n💡 Next steps:`);
       console.log(`   1. Review the imported puzzles`);
-      console.log(`   2. Run quality tests: npm run test:run -- puzzle-quality.test.ts`);
+      console.log(`   2. Run quality tests: npm run test:run`);
       console.log(`   3. If satisfied, copy problems-lichess.json to problems.json`);
     } else {
       console.error('❌ No puzzles were successfully imported.');

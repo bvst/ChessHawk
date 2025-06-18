@@ -38,6 +38,7 @@
     "analyze": "tsx scripts/analyze-puzzles.ts",
     "analyze:export": "tsx scripts/analyze-puzzles.ts --export",
     "import:lichess": "tsx scripts/quality-lichess-import.ts",
+    "import:download": "tsx scripts/quality-lichess-import.ts --download",
     "docker:dev": "./scripts/docker-dev.sh dev",
     "docker:test": "./scripts/docker-dev.sh test",
     "docker:test-run": "./scripts/docker-dev.sh test-run",
