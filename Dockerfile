@@ -15,7 +15,7 @@ RUN npm ci --only=production=false
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application (use working production build)
 RUN npm run build:production
 
 # Development stage
@@ -36,7 +36,7 @@ EXPOSE 5173
 # Start development server
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
-# Testing stage
+# Testing stage - optimized for faster CI builds
 FROM node:18-alpine AS testing
 
 WORKDIR /app
@@ -45,17 +45,21 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy only necessary source files for testing
+COPY src/ ./src/
+COPY tests/ ./tests/
+COPY tsconfig.json ./
+COPY vitest.config.ts ./
+COPY vite.config.ts ./
 
-# Install additional tools for testing
+# Install additional tools for testing (if needed)
 RUN npm install -g serve
 
 # Expose test UI port
 EXPOSE 51737
 
-# Default command runs tests with UI
-CMD ["npm", "run", "test:ui"]
+# Default command runs tests in headless mode for CI
+CMD ["npm", "run", "test:run"]
 
 # Production stage
 FROM nginx:alpine AS production

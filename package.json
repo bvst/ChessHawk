@@ -26,7 +26,7 @@
     "build:web": "vite build",
     "build:production": "npm run build:prod-bundle && npm run build:copy-libs",
     "build:prod-bundle": "vite build --mode production --config vite.config.production.ts",
-    "build:copy-libs": "tsx scripts/copy-production-libs.ts",
+    "build:copy-libs": "node scripts/copy-production-libs.js",
     "build:all": "npm run build:lib && npm run build:web",
     "preview": "vite preview",
     "preview:production": "npm run build:production && python3 -m http.server 8080 --directory dist",
