@@ -18,7 +18,7 @@ class BoardManager {
     #board: ChessboardInstance | null = null;
     #config: ChessboardConfig | null = null;
     #mobileHandlers: Map<string, EventListener> = new Map();
-    #isWaitingForOpponentMove: boolean = false;
+    // #isWaitingForOpponentMove: boolean = false; // TODO: Implement multiplayer functionality
 
     constructor() {
         this.#initializeConfig();
@@ -58,7 +58,7 @@ class BoardManager {
             position: 'start',
             orientation: 'white',
             pieceTheme: 'src/img/chesspieces/wikipedia/{piece}.png',
-            onDrop: this.onDrop.bind(this),
+            onDrop: this.onDrop.bind(this) as (source: string, target: string, piece: string, newPos: any, oldPos: any, orientation: string) => string,
             onSnapEnd: this.onSnapEnd.bind(this),
             onMouseoutSquare: this.onMouseoutSquare.bind(this),
             onMouseoverSquare: this.onMouseoverSquare.bind(this),
@@ -77,7 +77,7 @@ class BoardManager {
         }
         
         console.log('🏁 Initializing chessboard with element:', boardElement);
-        this.#board = window.Chessboard('myBoard', this.#config!) as ChessboardInstance;
+        this.#board = (window as any).Chessboard('myBoard', this.#config!) as ChessboardInstance;
         
         if (!this.#board) {
             console.error('❌ Failed to create Chessboard instance');
@@ -100,11 +100,11 @@ class BoardManager {
         if (boardElement && 'ontouchstart' in window) {
             console.log('   📱 Mobile device detected - adding touch handlers');
             
-            const touchStartHandler = (e: TouchEvent) => {
+            const touchStartHandler = (_e: Event) => {
                 console.log('📱 Touch start on chessboard');
             };
             
-            const touchMoveHandler = (e: TouchEvent) => {
+            const touchMoveHandler = (e: Event) => {
                 console.log('📱 Touch move on chessboard - preventing scroll');
                 e.preventDefault();
                 e.stopPropagation();
@@ -159,7 +159,7 @@ class BoardManager {
     /**
      * Handle piece drop events
      */
-    onDrop(source: string, target: string): string | void {
+    onDrop(source: string, target: string, _piece: string, _newPos: any, _oldPos: any, _orientation: string): string {
         console.log(`🎲 === onDrop() START ===`);
         console.log(`   🎯 Problem ID: ${(window as any).currentProblem?.id || 'NO PROBLEM'}`);
         console.log(`   🎲 Move attempt: ${source} → ${target}`);
@@ -197,6 +197,7 @@ class BoardManager {
         }
         
         console.log(`🎲 === onDrop() END ===`);
+        return '';
     }
 
     /**
@@ -211,7 +212,7 @@ class BoardManager {
     /**
      * Handle mouse over square events
      */
-    onMouseoverSquare(square: string, piece: string): void {
+    onMouseoverSquare(square: string, _piece: string): void {
         const game = (window as any).game as ChessInstance;
         const moves = game?.moves({
             square: square,
@@ -230,7 +231,7 @@ class BoardManager {
     /**
      * Handle mouse out square events
      */
-    onMouseoutSquare(square: string, piece: string): void {
+    onMouseoutSquare(_square: string, _piece: string): void {
         this.#removeGreySquares();
     }
 
@@ -290,7 +291,7 @@ class BoardManager {
     /**
      * Handle drag start events
      */
-    onDragStart(source: string, piece: string, position: any, orientation: string): boolean {
+    onDragStart(source: string, piece: string, _position: Record<string, string>, _orientation: string): boolean {
         console.log(`🎯 Drag start: ${piece} from ${source}`);
         
         document.body.classList.add('dragging');

@@ -49,6 +49,8 @@ export interface ChessboardConfig {
   onDrop?: (source: string, target: string, piece: string, newPos: any, oldPos: any, orientation: string) => string;
   onMoveEnd?: (oldPos: any, newPos: any) => void;
   onSnapEnd?: () => void;
+  onMouseoverSquare?: (square: string, piece: string) => void;
+  onMouseoutSquare?: (square: string, piece: string) => void;
   pieceTheme?: string;
   showNotation?: boolean;
   sparePieces?: boolean;

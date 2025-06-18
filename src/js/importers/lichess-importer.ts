@@ -82,7 +82,7 @@ export class LichessImporter {
       const explanation = i === 0 ? "Første trekk i løsningen" : `Fortsettelse av kombinasjonen`;
       
       const step: SolutionStep = {
-        move: move,
+        move: move || '',
         explanation: explanation
       };
       

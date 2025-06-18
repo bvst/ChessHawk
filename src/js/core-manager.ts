@@ -60,7 +60,7 @@ class CoreManager implements ModuleManager {
             console.log('♟️ Chess.js module imported successfully');
             
             // Ensure Chess is available globally
-            window.Chess = Chess;
+            (window as any).Chess = Chess;
             
             // Start initialization when DOM is ready
             this.#ensureDOMReady();
@@ -125,7 +125,7 @@ class CoreManager implements ModuleManager {
             
             // Initialize Chess.js game
             console.log('   ♟️ Initializing Chess.js game...');
-            this.#game = new Chess() as ChessInstance;
+            this.#game = new Chess() as unknown as ChessInstance;
             
             // Check if required DOM elements exist
             console.log('   🔍 Checking required DOM elements...');
@@ -219,7 +219,7 @@ class CoreManager implements ModuleManager {
         console.log('   📋 Library status:', requiredLibs);
         
         const missingLibs = Object.entries(requiredLibs)
-            .filter(([name, loaded]) => !loaded)
+            .filter(([_name, loaded]) => !loaded)
             .map(([name]) => name);
             
         if (missingLibs.length > 0) {
@@ -235,7 +235,7 @@ class CoreManager implements ModuleManager {
      * Sett opp event handlers
      */
     async #setupEventHandlers(): Promise<void> {
-        const uiManager = this.#modules.get('ui');
+        // const _uiManager = this.#modules.get('ui');
         
         // Modern event listeners with AbortController for cleanup
         this.#abortController = new AbortController();
@@ -441,8 +441,8 @@ class CoreManager implements ModuleManager {
         window.debugTools = this.#modules.get('debug');
         
         // Expose centralized game instances for backward compatibility
-        window.game = this.#game;
-        window.board = this.#board;
+        (window as any).game = this.#game;
+        (window as any).board = this.#board;
         
         // Expose state properties with getters/setters for centralized management
         Object.defineProperty(window, 'currentProblem', {
@@ -461,14 +461,14 @@ class CoreManager implements ModuleManager {
         });
         
         // Expose legacy functions for backward compatibility
-        window.initChessHawk = () => this.init();
-        window.loadRandomProblem = () => this.loadRandomProblem();
-        window.showHint = () => this.showHint();
-        window.showSolution = () => this.showSolution();
+        (window as any).initChessHawk = () => this.init();
+        (window as any).loadRandomProblem = () => this.loadRandomProblem();
+        (window as any).showHint = () => this.showHint();
+        (window as any).showSolution = () => this.showSolution();
         
         // Expose standardized error handling
-        window.handleError = (error, context, showToUser) => this.handleError(error, context, showToUser);
-        window.handleWarning = (message, context, showToUser) => this.handleWarning(message, context, showToUser);
+        (window as any).handleError = (error: any, context: any, showToUser: any) => this.handleError(error, context, showToUser);
+        (window as any).handleWarning = (message: any, context: any, showToUser: any) => this.handleWarning(message, context, showToUser);
         
         console.log('🌐 Globals exposed for backward compatibility');
     }
@@ -484,10 +484,10 @@ class CoreManager implements ModuleManager {
     /**
      * Vis feilmelding
      */
-    #showErrorMessage(message: string): void {
-        const uiManager = this.#modules.get('ui');
-        uiManager?.showFeedback(`❌ ${message}`, 'error');
-    }
+    // #showErrorMessage(message: string): void {
+    //     const uiManager = this.#modules.get('ui');
+    //     uiManager?.showFeedback(`❌ ${message}`, 'error');
+    // }
 
     /**
      * Standardisert feilhåndtering
@@ -608,7 +608,7 @@ class CoreManager implements ModuleManager {
     /**
      * Legg til løst problem
      */
-    addSolvedProblem(problemId: string): void {
+    addSolvedProblem(_problemId: string): void {
         this.#gameState.solvedProblems++;
         this.#persistState();
     }

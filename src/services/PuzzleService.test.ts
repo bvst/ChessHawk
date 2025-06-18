@@ -92,6 +92,7 @@ describe('LocalPuzzleService', () => {
     // Mock successful puzzle data fetch
     mockFetch.mockResolvedValue({
       ok: true,
+      status: 200,
       json: async () => mockPuzzleData
     } as Response);
     
@@ -110,15 +111,20 @@ describe('LocalPuzzleService', () => {
     });
 
     it('should handle initialization errors', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Failed to load'));
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => { throw new Error('Not found') }
+      } as Response);
       
       const newService = new LocalPuzzleService();
-      await expect(newService.getPuzzles()).rejects.toThrow('Failed to load');
+      await expect(newService.getPuzzles()).rejects.toThrow('Failed to fetch puzzle data');
     });
 
     it('should handle invalid data format', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => ({ invalid: 'data' })
       } as Response);
       
@@ -307,6 +313,7 @@ describe('LocalPuzzleService', () => {
     it('should reject empty database', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => ({ puzzles: [] })
       } as Response);
       
@@ -326,6 +333,7 @@ describe('LocalPuzzleService', () => {
       
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => invalidData
       } as Response);
       
@@ -397,6 +405,7 @@ describe('ApiPuzzleService', () => {
     it('should include API key in headers', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => mockPuzzleData.puzzles[0]
       } as Response);
 
@@ -418,6 +427,7 @@ describe('ApiPuzzleService', () => {
       
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => mockPuzzleData.puzzles[0]
       } as Response);
 
@@ -466,6 +476,7 @@ describe('ApiPuzzleService', () => {
     it('should construct correct query parameters', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => ({ puzzles: [] })
       } as Response);
 
@@ -497,6 +508,7 @@ describe('ApiPuzzleService', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => mockResult
       } as Response);
 

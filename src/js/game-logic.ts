@@ -54,7 +54,7 @@ class GameLogic implements IGameLogic {
         if (!this.game) return false;
         
         try {
-            const moves = this.game.moves();
+            const moves = this.game.moves() as string[];
             return moves.includes(move);
         } catch (error) {
             return false;
@@ -99,7 +99,7 @@ class GameLogic implements IGameLogic {
         const expectedMove = currentProblem.solution[this.#currentMoveIndex];
         console.log(`🎯 Expected move at index ${this.#currentMoveIndex}: ${expectedMove}`);
         
-        if (playerMove === expectedMove) {
+        if (expectedMove && playerMove === expectedMove) {
             this.#currentMoveIndex++;
             console.log(`✅ Correct move! Moving to index ${this.#currentMoveIndex}`);
             
@@ -113,7 +113,7 @@ class GameLogic implements IGameLogic {
             
         } else {
             console.log(`❌ Wrong move! Expected: ${expectedMove}, Got: ${playerMove}`);
-            this.#handleWrongMove(expectedMove, playerMove);
+            this.#handleWrongMove(expectedMove || '', playerMove);
             return false;
         }
     }

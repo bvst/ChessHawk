@@ -47,7 +47,7 @@ export class ChessHawkCore {
    * Get a module by name
    */
   getModule<T = any>(name: string): T | undefined {
-    return this.modules.get(name)
+    return this.modules.get(name) as T | undefined
   }
 
   /**

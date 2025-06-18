@@ -10,10 +10,7 @@ export default defineConfig({
     globals: true,
     
     // UI configuration for Docker
-    ui: {
-      host: '0.0.0.0',
-      port: 51737
-    },
+    ui: true,
     
     // Test file patterns
     include: [
@@ -67,7 +64,7 @@ export default defineConfig({
     clearMocks: true,
     
     // Reporter configuration
-    reporter: ['verbose'],
+    reporters: ['verbose'],
     
     // Watch configuration
     watch: true,

@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import type { UserProgress, SolutionResult, PuzzleFilter } from '../services/PuzzleService';
 
 export interface Puzzle {
   id: string;
@@ -192,7 +193,7 @@ export const useGameStore = create<GameState & GameActions>()(
         if (puzzleId) {
           puzzle = availablePuzzles.find(p => p.id === puzzleId) || null;
         } else if (availablePuzzles.length > 0) {
-          puzzle = availablePuzzles[currentPuzzleIndex] || availablePuzzles[0];
+          puzzle = availablePuzzles[currentPuzzleIndex] || availablePuzzles[0] || null;
         }
         
         if (puzzle) {
@@ -248,7 +249,9 @@ export const useGameStore = create<GameState & GameActions>()(
       if (candidates.length > 0) {
         const randomIndex = Math.floor(Math.random() * candidates.length);
         const randomPuzzle = candidates[randomIndex];
-        await get().loadPuzzle(randomPuzzle.id);
+        if (randomPuzzle) {
+          await get().loadPuzzle(randomPuzzle.id);
+        }
       }
     },
     
@@ -397,8 +400,8 @@ export const useGameStore = create<GameState & GameActions>()(
       }));
     },
     
-    updateStats: (puzzleId: string, solved: boolean, timeSpent: number, attempts: number) => {
-      const { currentPuzzle, userStats } = get();
+    updateStats: (_puzzleId: string, solved: boolean, timeSpent: number, attempts: number) => {
+      const { currentPuzzle, userStats: _userStats } = get();
       if (!currentPuzzle) return;
       
       const theme = currentPuzzle.theme;
@@ -519,5 +522,21 @@ export const useBoardState = () => {
   }));
 };
 
+// Additional types
+export interface UserStats {
+  totalSolved: number;
+  totalAttempts: number;
+  averageTime: number;
+  averageScore: number;
+  streakCurrent: number;
+  streakBest: number;
+}
+
+export interface ThemeProgress {
+  solved: number;
+  total: number;
+  averageRating: number;
+}
+
 // Re-export types for external use
-export type { UserProgress, UserStats, ThemeProgress, PuzzleFilter, SolutionResult };
+export type { UserProgress, SolutionResult, PuzzleFilter };

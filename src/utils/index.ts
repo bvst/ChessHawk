@@ -49,6 +49,9 @@ export function isValidFEN(fen: string): boolean {
   
   const [position, turn, castling, enPassant, halfMove, fullMove] = parts
   
+  // Validate we have all required parts
+  if (!position || !turn || !castling || !enPassant || !halfMove || !fullMove) return false
+  
   // Validate position
   const ranks = position.split('/')
   if (ranks.length !== 8) return false

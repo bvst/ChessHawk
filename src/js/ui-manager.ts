@@ -12,7 +12,7 @@ import type { ChessPuzzle, IUIManager, FeedbackType, NotificationOptions } from 
  */
 class UIManager implements IUIManager {
     #feedbackTimer: NodeJS.Timeout | null = null;
-    #notificationQueue: Array<{ message: string; type: FeedbackType; duration: number }> = [];
+    // #notificationQueue: Array<{ message: string; type: FeedbackType; duration: number }> = [];
 
     constructor() {
         console.log('🎨 UIManager initialized');
@@ -226,7 +226,7 @@ class UIManager implements IUIManager {
         if (this.#feedbackTimer) {
             clearTimeout(this.#feedbackTimer);
         }
-        this.#notificationQueue = [];
+        // this.#notificationQueue = [];
         this.clearFeedback();
         this.clearSolution();
     }

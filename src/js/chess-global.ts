@@ -14,13 +14,13 @@ export const Chess = ChessClass;
 // Also expose globally for backward compatibility with chessboard.js and other code
 declare global {
   interface Window {
-    Chess: typeof ChessClass;
+    Chess: new (fen?: string) => ChessInstance;
   }
 }
 
 // Make Chess available globally
 if (typeof window !== 'undefined') {
-  window.Chess = ChessClass;
+  (window as any).Chess = ChessClass;
   console.log('✅ Chess.js v1.3.1 loaded as ES module and exposed globally');
 } else {
   console.log('✅ Chess.js v1.3.1 loaded as ES module (server-side)');
@@ -28,7 +28,7 @@ if (typeof window !== 'undefined') {
 
 // Helper function to create a new Chess instance
 export function createChessGame(fen?: string): ChessInstance {
-  return new Chess(fen) as ChessInstance;
+  return new Chess(fen) as unknown as ChessInstance;
 }
 
 // Export the Chess constructor type

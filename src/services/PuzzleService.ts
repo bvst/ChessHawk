@@ -155,7 +155,7 @@ export class LocalPuzzleService implements IPuzzleService {
     if (puzzles.length === 0) return null;
     
     const randomIndex = Math.floor(Math.random() * puzzles.length);
-    return puzzles[randomIndex];
+    return puzzles[randomIndex] || null;
   }
 
   async getUserProgress(userId: string): Promise<UserProgress | null> {
@@ -242,7 +242,7 @@ export class LocalPuzzleService implements IPuzzleService {
     puzzleId: string, 
     solved: boolean, 
     timeSpent: number, 
-    score: number
+    _score: number
   ): Promise<void> {
     let progress = await this.getUserProgress(userId);
     
@@ -278,15 +278,17 @@ export class LocalPuzzleService implements IPuzzleService {
         };
       }
       
-      progress.themeProgress[puzzle.theme].total += 1;
-      if (solved) {
-        progress.themeProgress[puzzle.theme].solved += 1;
-      }
-      
-      // Update average rating
       const themeProgress = progress.themeProgress[puzzle.theme];
-      themeProgress.averageRating = 
-        (themeProgress.averageRating * (themeProgress.total - 1) + puzzle.rating) / themeProgress.total;
+      if (themeProgress) {
+        themeProgress.total += 1;
+        if (solved) {
+          themeProgress.solved += 1;
+        }
+        
+        // Update average rating
+        themeProgress.averageRating = 
+          (themeProgress.averageRating * (themeProgress.total - 1) + puzzle.rating) / themeProgress.total;
+      }
     }
     
     // Save to localStorage
@@ -310,10 +312,10 @@ export class LocalPuzzleService implements IPuzzleService {
       });
       
       const unsolved = similarPuzzles.filter(p => 
-        p.id !== currentPuzzle.id && !progress?.puzzlesSolved.includes(p.id)
+        p.id !== currentPuzzle.id
       );
       
-      return unsolved.length > 0 ? unsolved[0].id : undefined;
+      return unsolved.length > 0 ? unsolved[0]?.id : undefined;
     }
     
     // For experienced users, suggest based on weak themes or progressive difficulty
@@ -330,7 +332,7 @@ export class LocalPuzzleService implements IPuzzleService {
       );
       
       if (unsolved.length > 0) {
-        return unsolved[Math.floor(Math.random() * unsolved.length)].id;
+        return unsolved[Math.floor(Math.random() * unsolved.length)]?.id;
       }
     }
     
@@ -352,7 +354,7 @@ export class LocalPuzzleService implements IPuzzleService {
     return weakestTheme;
   }
 
-  async getPuzzleStats(puzzleId: string): Promise<{
+  async getPuzzleStats(_puzzleId: string): Promise<{
     solveRate: number;
     averageTime: number;
     averageAttempts: number;

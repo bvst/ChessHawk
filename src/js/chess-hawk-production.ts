@@ -59,7 +59,7 @@ class ProductionCoreManager implements ModuleManager {
     async #waitForEnvironmentAndInit(): Promise<void> {
         try {
             // Check if Chess.js is available globally
-            if (typeof window.Chess === 'undefined' && typeof Chess === 'undefined') {
+            if (typeof (window as any).Chess === 'undefined' && typeof (globalThis as any).Chess === 'undefined') {
                 console.warn('⚠️ Chess.js not yet loaded, waiting...');
                 setTimeout(() => this.#waitForEnvironmentAndInit(), 100);
                 return;
@@ -127,7 +127,7 @@ class ProductionCoreManager implements ModuleManager {
             
             // Initialize Chess.js game using global Chess
             console.log('   ♟️ Initializing Chess.js game...');
-            const ChessConstructor = window.Chess || (window as any).Chess || Chess;
+            const ChessConstructor = (window as any).Chess || (globalThis as any).Chess;
             this.#game = new ChessConstructor() as ChessInstance;
             
             // Check DOM elements
@@ -210,14 +210,14 @@ class ProductionCoreManager implements ModuleManager {
     #checkLibraries(): boolean {
         const requiredLibs: Record<string, boolean> = {
             'jQuery': typeof $ !== 'undefined',
-            'Chess.js': typeof Chess !== 'undefined' || typeof window.Chess !== 'undefined', 
+            'Chess.js': typeof (globalThis as any).Chess !== 'undefined' || typeof (window as any).Chess !== 'undefined', 
             'Chessboard.js': typeof window.Chessboard !== 'undefined'
         };
         
         console.log('   📋 Production library status:', requiredLibs);
         
         const missingLibs = Object.entries(requiredLibs)
-            .filter(([name, loaded]) => !loaded)
+            .filter(([_name, loaded]) => !loaded)
             .map(([name]) => name);
             
         if (missingLibs.length > 0) {
@@ -389,17 +389,17 @@ class ProductionCoreManager implements ModuleManager {
         window.uiManager = this.#modules.get('ui');
         window.debugTools = this.#modules.get('debug');
         
-        window.game = this.#game;
-        window.board = this.#board;
+        (window as any).game = this.#game;
+        (window as any).board = this.#board;
         
         Object.defineProperty(window, 'currentProblem', {
             get: () => this.#gameState.currentProblem,
             set: (value) => { this.#gameState.currentProblem = value; }
         });
         
-        window.loadRandomProblem = () => this.loadRandomProblem();
-        window.showHint = () => this.showHint();
-        window.showSolution = () => this.showSolution();
+        (window as any).loadRandomProblem = () => this.loadRandomProblem();
+        (window as any).showHint = () => this.showHint();
+        (window as any).showSolution = () => this.showSolution();
         
         console.log('🌐 Production globals exposed');
     }

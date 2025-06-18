@@ -13,7 +13,7 @@ import type { ChessPuzzle, IProblemManager } from '../types/chess-hawk';
 class ProblemManager implements IProblemManager {
     problems: ChessPuzzle[] = [];
     currentProblem: ChessPuzzle | null = null;
-    #currentProblemIndex: number = -1;
+    // #currentProblemIndex: number = -1;
     #abortController: AbortController | null = null;
 
     constructor() {
@@ -60,7 +60,7 @@ class ProblemManager implements IProblemManager {
             ];
             
             let response: Response | null = null;
-            let jsonPath = '';
+            // let jsonPath = '';
             
             for (const path of pathsToTry) {
                 try {
@@ -71,7 +71,7 @@ class ProblemManager implements IProblemManager {
                     });
                     
                     if (response.ok) {
-                        jsonPath = path;
+                        // jsonPath = path;
                         console.log(`   ✅ Success with path: ${path}`);
                         break;
                     } else {
@@ -143,6 +143,11 @@ class ProblemManager implements IProblemManager {
         const randomIndex = Math.floor(Math.random() * this.problems.length);
         const problem = this.problems[randomIndex];
         
+        if (!problem) {
+            console.error('❌ No problem found at random index');
+            return null;
+        }
+        
         console.log(`   🎯 Selected problem ${randomIndex + 1}/${this.problems.length}:`, {
             id: problem.id,
             title: problem.title,
@@ -152,7 +157,7 @@ class ProblemManager implements IProblemManager {
         });
         
         this.currentProblem = problem;
-        this.#currentProblemIndex = randomIndex;
+        // this.#currentProblemIndex = randomIndex;
         
         (window as any).currentProblem = problem;
         
@@ -295,7 +300,7 @@ class ProblemManager implements IProblemManager {
         this.#abortController?.abort();
         this.problems = [];
         this.currentProblem = null;
-        this.#currentProblemIndex = -1;
+        // this.#currentProblemIndex = -1;
         (window as any).currentProblem = null;
     }
 }

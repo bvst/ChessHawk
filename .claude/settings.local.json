@@ -20,7 +20,12 @@
       "Bash(./scripts/docker-dev.sh:*)",
       "Bash(ss:*)",
       "Bash(mv:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "WebFetch(domain:lichess.org)",
+      "WebFetch(domain:database.lichess.org)",
+      "Bash(git add:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm test)"
     ],
     "deny": []
   }
