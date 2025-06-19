@@ -5,11 +5,11 @@
  * TypeScript version with proper type safety
  */
 
-import type { ChessInstance, ChessboardInstance, ChessboardConfig } from '../types/chess-hawk';
+import type { ChessInstance, ChessboardInstance, ChessboardConfig } from '../types/chess.types';
 
 // Color constants for square highlighting
-const whiteSquareGrey = '#a9a9a9';
-const blackSquareGrey = '#696969';
+const WHITE_SQUARE_GREY = '#a9a9a9';
+const BLACK_SQUARE_GREY = '#696969';
 
 /**
  * BoardManager klasse for håndtering av sjakkbrett
@@ -254,9 +254,9 @@ class BoardManager {
         
         const $square = $(`#myBoard .square-${square}`);
         
-        let background = whiteSquareGrey;
+        let background = WHITE_SQUARE_GREY;
         if ($square.hasClass('black-3c85d')) {
-            background = blackSquareGrey;
+            background = BLACK_SQUARE_GREY;
         }
         
         $square.css('background', background);

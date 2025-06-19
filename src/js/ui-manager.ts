@@ -5,7 +5,7 @@
  * TypeScript version with proper type safety
  */
 
-import type { ChessPuzzle, IUIManager, FeedbackType, NotificationOptions } from '../types/chess-hawk';
+import type { ChessPuzzle, IUIManager, FeedbackType, NotificationOptions } from '../types/chess.types';
 
 /**
  * UIManager klasse for håndtering av brukergrensesnitt

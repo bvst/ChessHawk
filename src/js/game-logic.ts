@@ -5,7 +5,8 @@
  * TypeScript version with proper type safety
  */
 
-import type { ChessInstance, ChessPuzzle, IGameLogic } from '../types/chess-hawk';
+import type { ChessInstance, IGameLogic } from '../types/chess.types';
+import type { Puzzle } from '../types/puzzle.types';
 
 /**
  * GameLogic klasse for håndtering av spillogikk og løsningsvalidering
@@ -67,7 +68,7 @@ class GameLogic implements IGameLogic {
     checkSolution(): boolean {
         console.log(`🎯 === checkSolution() START ===`);
         
-        const currentProblem = (window as any).currentProblem as ChessPuzzle;
+        const currentProblem = (window as any).currentProblem as Puzzle;
         const game = (window as any).game as ChessInstance;
         
         if (!currentProblem) {
@@ -122,14 +123,14 @@ class GameLogic implements IGameLogic {
      * Show hint
      */
     showHint(): void {
-        const currentProblem = (window as any).currentProblem as ChessPuzzle;
+        const currentProblem = (window as any).currentProblem as Puzzle;
         
-        if (!currentProblem || !currentProblem.hints || currentProblem.hints.length === 0) {
+        if (!currentProblem || !currentProblem.hint) {
             this.#showFeedback('Ingen hint tilgjengelig for dette problemet', 'info');
             return;
         }
         
-        const hint = currentProblem.hints[this.#currentHintIndex % currentProblem.hints.length];
+        const hint = currentProblem.hint;
         this.#showFeedback(`💡 Hint: ${hint}`, 'info', 5000);
         
         this.#currentHintIndex++;
@@ -140,7 +141,7 @@ class GameLogic implements IGameLogic {
      * Show solution
      */
     showSolution(): void {
-        const currentProblem = (window as any).currentProblem as ChessPuzzle;
+        const currentProblem = (window as any).currentProblem as Puzzle;
         
         if (!currentProblem) {
             this.#showFeedback('Ingen problem lastet!', 'error');
@@ -171,7 +172,7 @@ class GameLogic implements IGameLogic {
     #handleSolutionComplete(): void {
         console.log('🎉 === SOLUTION COMPLETE ===');
         
-        const currentProblem = (window as any).currentProblem as ChessPuzzle;
+        const currentProblem = (window as any).currentProblem as Puzzle;
         const points = currentProblem.points || 10;
         
         // Update score

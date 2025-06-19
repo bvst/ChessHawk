@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { LocalPuzzleService, ApiPuzzleService, PuzzleServiceFactory } from './PuzzleService';
-import type { PuzzleFilter, UserProgress, SolutionResult } from './PuzzleService';
-import type { Puzzle } from '../stores/GameStore';
+import { LocalPuzzleService, ApiPuzzleService, PuzzleServiceFactory } from './puzzle-service';
+import type { PuzzleFilter, UserProgress, SolutionResult } from './puzzle-service';
+import type { Puzzle } from '../stores/game-store';
 
 // Mock fetch for API service tests
 global.fetch = vi.fn();

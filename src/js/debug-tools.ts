@@ -5,7 +5,7 @@
  * TypeScript version with proper type safety
  */
 
-import type { ChessPuzzle, IDebugTools } from '../types/chess-hawk';
+import type { ChessPuzzle, IDebugTools } from '../types/chess.types';
 
 /**
  * DebugTools klasse for debugging og analyse

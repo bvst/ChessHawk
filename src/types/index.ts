@@ -3,25 +3,27 @@
  * Shared types across the entire library
  */
 
-// Re-export all types from stores and services
+// Production-ready concrete puzzle types (PRIMARY)
+export * from './puzzle.types';
+
+// Re-export all types from stores and services (SECONDARY)
 export type {
-  Puzzle,
-  UserProgress,
   UserSettings,
   GameState,
   GameActions,
-  PuzzleFilter,
-  SolutionResult,
   UserStats,
   ThemeProgress
-} from '../stores/GameStore'
+} from '../stores/game-store'
 
 export type {
   IPuzzleService,
   PuzzleServiceConfig,
   UserProgressData,
-  ExportedUserData
-} from '../services/PuzzleService'
+  ExportedUserData,
+  UserProgress,
+  SolutionResult,
+  PuzzleFilter
+} from '../services/puzzle-service'
 
 // Component types
 export interface ChessHawkLibraryConfig {
@@ -70,7 +72,7 @@ export interface BoardState {
 // Event types
 export interface PuzzleEvent {
   type: 'puzzle_loaded' | 'move_made' | 'puzzle_solved' | 'puzzle_failed' | 'hint_requested' | 'solution_shown'
-  puzzle?: import('../stores/GameStore').Puzzle
+  puzzle?: Puzzle
   move?: ChessMove
   success?: boolean
   timeSpent?: number
@@ -119,12 +121,16 @@ export class ServiceInitializationError extends Error implements ChessHawkError 
   }
 }
 
-// Utility types
+// Utility types - use concrete types from puzzle.types.ts
 export type Platform = 'web' | 'react-native' | 'electron' | 'tauri'
 export type Theme = 'light' | 'dark' | 'auto'
 export type Language = 'en' | 'no'
-export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
-export type PuzzleTheme = 'fork' | 'pin' | 'skewer' | 'mate' | 'sacrifice' | 'deflection' | 'decoy' | 'discoveredAttack'
+
+// Import concrete types instead of redefining
+export type { PuzzleDifficulty as Difficulty, TacticalTheme as PuzzleTheme } from './puzzle.types';
+
+// Backward compatibility aliases
+export type { Puzzle as ChessPuzzle } from './puzzle.types';
 
 // Configuration validation
 export function validateConfig(config: ChessHawkLibraryConfig): string[] {

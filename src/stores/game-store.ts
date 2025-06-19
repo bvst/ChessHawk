@@ -5,23 +5,12 @@
 
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import type { Puzzle, PuzzleDifficulty, TacticalTheme } from '../types/puzzle.types';
 import type { UserProgress, SolutionResult, PuzzleFilter } from '../services/PuzzleService';
 
-export interface Puzzle {
-  id: string;
-  theme: string;
-  title: string;
-  description: string;
-  fen: string;
-  solution: string[];
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  rating: number;
-  points: number;
-  hint: string;
-  tags: string[];
-  source: string;
-  createdAt: string;
-}
+// Use concrete Puzzle type from puzzle.types.ts
+// Re-export for backward compatibility
+export type { Puzzle } from '../types/puzzle.types';
 
 export interface Move {
   from: string;
@@ -61,7 +50,7 @@ export interface UserSettings {
   showHints: boolean;
   autoPromoteQueen: boolean;
   language: 'no' | 'en';
-  difficulty: 'auto' | 'beginner' | 'intermediate' | 'advanced';
+  difficulty: 'auto' | PuzzleDifficulty;
   preferredThemes: string[];
 }
 
@@ -99,7 +88,7 @@ export interface GameActions {
   // Puzzle management
   loadPuzzle: (puzzleId?: string) => Promise<void>;
   loadNextPuzzle: () => Promise<void>;
-  loadRandomPuzzle: (theme?: string, difficulty?: string) => Promise<void>;
+  loadRandomPuzzle: (theme?: TacticalTheme, difficulty?: PuzzleDifficulty) => Promise<void>;
   
   // Game actions
   makeMove: (move: Move) => void;
@@ -127,7 +116,7 @@ export interface GameActions {
   
   // Puzzle collection
   loadPuzzleDatabase: () => Promise<void>;
-  filterPuzzles: (theme?: string, difficulty?: string) => void;
+  filterPuzzles: (theme?: TacticalTheme, difficulty?: PuzzleDifficulty) => void;
 }
 
 const defaultSettings: UserSettings = {
@@ -233,7 +222,7 @@ export const useGameStore = create<GameState & GameActions>()(
       await get().loadPuzzle();
     },
     
-    loadRandomPuzzle: async (theme?: string, difficulty?: string) => {
+    loadRandomPuzzle: async (theme?: TacticalTheme, difficulty?: PuzzleDifficulty) => {
       const { availablePuzzles } = get();
       
       let candidates = availablePuzzles;
@@ -476,7 +465,7 @@ export const useGameStore = create<GameState & GameActions>()(
       }
     },
     
-    filterPuzzles: (theme?: string, difficulty?: string) => {
+    filterPuzzles: (theme?: TacticalTheme, difficulty?: PuzzleDifficulty) => {
       const { availablePuzzles } = get();
       
       let filtered = availablePuzzles;

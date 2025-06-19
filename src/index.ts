@@ -5,10 +5,10 @@
 
 // Core exports
 export * from './core'
-export * from './stores/GameStore'
+export * from './stores/game-store'
 
 // Service layer exports  
-export * from './services/PuzzleService'
+export * from './services/puzzle-service'
 
 // Type definitions
 export * from './types'
@@ -27,12 +27,12 @@ export type {
   GameState,
   PuzzleFilter,
   SolutionResult
-} from './stores/GameStore'
+} from './stores/game-store'
 
 export type {
   IPuzzleService,
   PuzzleServiceConfig
-} from './services/PuzzleService'
+} from './services/puzzle-service'
 
 // Library metadata
 export const ChessHawkVersion = '3.0.0'

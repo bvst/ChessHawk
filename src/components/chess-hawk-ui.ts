@@ -3,8 +3,8 @@
  * High-level UI component that combines board, controls, and game state
  */
 
-import { createChessBoardAdapter, type ChessBoardAdapter, type ChessBoardConfig } from './ChessBoard'
-import { useGameStore, type Puzzle } from '../stores/GameStore'
+import { createChessBoardAdapter, type ChessBoardAdapter, type ChessBoardConfig } from './chess-board'
+import { useGameStore, type Puzzle } from '../stores/game-store'
 import type { Platform, ChessMove } from '../types'
 
 export interface ChessHawkUIConfig {

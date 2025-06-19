@@ -120,11 +120,11 @@ export interface IBoardManager {
 }
 
 export interface IProblemManager {
-  problems: ChessPuzzle[];
-  currentProblem: ChessPuzzle | null;
-  loadProblems(): Promise<ChessPuzzle[]>;
-  getRandomProblem(): ChessPuzzle | null;
-  displayProblem(problem: ChessPuzzle): void;
+  problems: import('../types/puzzle.types').Puzzle[];
+  currentProblem: import('../types/puzzle.types').Puzzle | null;
+  loadProblems(): Promise<import('../types/puzzle.types').Puzzle[]>;
+  getRandomProblem(): import('../types/puzzle.types').Puzzle | null;
+  displayProblem(problem: import('../types/puzzle.types').Puzzle): void;
 }
 
 export interface IGameLogic {
@@ -142,7 +142,7 @@ export interface IUIManager {
   showSolution(): void;
   clearSolution(): void;
   updateGameStatus(status: string): void;
-  updateProblemDisplay(problem: ChessPuzzle): void;
+  updateProblemDisplay(problem: import('../types/puzzle.types').Puzzle): void;
 }
 
 export interface IDebugTools {

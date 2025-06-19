@@ -66,8 +66,8 @@ export class ChessHawkCore {
 
   private async initializeServices(config: ChessHawkConfig): Promise<void> {
     // Import and initialize services
-    const { PuzzleServiceFactory } = await import('../services/PuzzleService')
-    const { useGameStore } = await import('../stores/GameStore')
+    const { PuzzleServiceFactory } = await import('../services/puzzle-service')
+    const { useGameStore } = await import('../stores/game-store')
 
     // Setup puzzle service
     const puzzleService = config.puzzleService 

@@ -185,5 +185,5 @@ export class ComponentFactory {
 }
 
 // Re-export types
-import type { Puzzle } from '../stores/GameStore'
+import type { Puzzle } from '../stores/game-store'
 export type { Puzzle }

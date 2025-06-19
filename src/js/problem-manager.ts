@@ -5,14 +5,15 @@
  * TypeScript version with proper type safety
  */
 
-import type { ChessPuzzle, IProblemManager } from '../types/chess-hawk';
+import type { Puzzle } from '../types/puzzle.types';
+import type { IProblemManager } from '../types/chess.types';
 
 /**
  * ProblemManager klasse for håndtering av problemer
  */
 class ProblemManager implements IProblemManager {
-    problems: ChessPuzzle[] = [];
-    currentProblem: ChessPuzzle | null = null;
+    problems: Puzzle[] = [];
+    currentProblem: Puzzle | null = null;
     // #currentProblemIndex: number = -1;
     #abortController: AbortController | null = null;
 
@@ -42,7 +43,7 @@ class ProblemManager implements IProblemManager {
     /**
      * Load problems from JSON file
      */
-    async loadProblems(): Promise<ChessPuzzle[]> {
+    async loadProblems(): Promise<Puzzle[]> {
         console.log('📂 === LOADING PROBLEMS ===');
         
         try {
@@ -132,7 +133,7 @@ class ProblemManager implements IProblemManager {
     /**
      * Get random problem
      */
-    getRandomProblem(): ChessPuzzle | null {
+    getRandomProblem(): Puzzle | null {
         console.log('🎲 === GET RANDOM PROBLEM ===');
         
         if (!this.problems || this.problems.length === 0) {
@@ -151,7 +152,7 @@ class ProblemManager implements IProblemManager {
         console.log(`   🎯 Selected problem ${randomIndex + 1}/${this.problems.length}:`, {
             id: problem.id,
             title: problem.title,
-            category: problem.category,
+            theme: problem.theme,
             difficulty: problem.difficulty,
             rating: problem.rating
         });
@@ -167,7 +168,7 @@ class ProblemManager implements IProblemManager {
     /**
      * Display problem
      */
-    displayProblem(problem: ChessPuzzle): void {
+    displayProblem(problem: Puzzle): void {
         if (!problem) {
             console.error('❌ No problem to display');
             return;
@@ -175,7 +176,7 @@ class ProblemManager implements IProblemManager {
         
         console.log('🖥️ === DISPLAYING PROBLEM ===');
         console.log(`   📋 Problem: ${problem.title}`);
-        console.log(`   📂 Category: ${problem.category || problem.theme}`);
+        console.log(`   📂 Theme: ${problem.theme}`);
         console.log(`   ⭐ Difficulty: ${problem.difficulty}`);
         console.log(`   📊 Rating: ${problem.rating}`);
         console.log(`   💎 Points: ${problem.points}`);
@@ -187,34 +188,40 @@ class ProblemManager implements IProblemManager {
     /**
      * Create fallback data for testing
      */
-    #createFallbackData(): ChessPuzzle[] | null {
+    #createFallbackData(): Puzzle[] | null {
         try {
             return [
                 {
                     id: "fallback_1",
-                    type: "tactic",
+                    theme: "fork" as const,
                     title: "Test Problem - Fork",
                     description: "Find the fork that wins material",
                     fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                    solution: ["e4", "e5", "Nf3"],
-                    hints: ["Look for a knight move", "Attack two pieces at once"],
-                    difficulty: "beginner",
-                    category: "fork",
+                    solution: ["e4", "e5", "Nf3"] as const,
+                    hint: "Look for a knight move that attacks two pieces",
+                    difficulty: "beginner" as const,
+                    tags: ["fork", "beginner", "opening"] as const,
                     points: 10,
-                    rating: 1200
+                    rating: 1200,
+                    source: "Curated" as const,
+                    lichessUrl: "https://lichess.org/training/fallback_1",
+                    createdAt: new Date().toISOString()
                 },
                 {
-                    id: "fallback_2", 
-                    type: "tactic",
+                    id: "fallback_2",
+                    theme: "pin" as const,
                     title: "Test Problem - Pin",
                     description: "Find the pin that wins the queen",
                     fen: "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2",
-                    solution: ["Bc4", "Nf6", "Ng5"],
-                    hints: ["Pin the knight", "Attack f7"],
-                    difficulty: "intermediate",
-                    category: "pin", 
+                    solution: ["Bc4", "Nf6", "Ng5"] as const,
+                    hint: "Pin the knight to attack f7",
+                    difficulty: "intermediate" as const,
+                    tags: ["pin", "intermediate", "opening"] as const,
                     points: 15,
-                    rating: 1400
+                    rating: 1400,
+                    source: "Curated" as const,
+                    lichessUrl: "https://lichess.org/training/fallback_2",
+                    createdAt: new Date().toISOString()
                 }
             ];
         } catch (error) {
@@ -226,7 +233,7 @@ class ProblemManager implements IProblemManager {
     /**
      * Update problem UI
      */
-    #updateProblemUI(problem: ChessPuzzle): void {
+    #updateProblemUI(problem: Puzzle): void {
         const elements = {
             title: document.getElementById('problem-title') || document.getElementById('problemTitle'),
             description: document.getElementById('problem-description') || document.getElementById('problemDescription'),
@@ -238,14 +245,14 @@ class ProblemManager implements IProblemManager {
         
         if (elements.title) elements.title.textContent = problem.title || 'Ukjent problem';
         if (elements.description) elements.description.textContent = problem.description || '';
-        if (elements.category) elements.category.textContent = problem.category || problem.theme || 'Ukjent';
+        if (elements.category) elements.category.textContent = problem.theme || 'Ukjent';
         if (elements.difficulty) elements.difficulty.textContent = problem.difficulty || 'Ukjent';
         if (elements.rating) elements.rating.textContent = problem.rating?.toString() || 'N/A';
         if (elements.points) elements.points.textContent = problem.points?.toString() || '0';
         
         const metaElement = document.getElementById('problem-meta');
         if (metaElement) {
-            const category = problem.category || problem.theme || 'ukjent';
+            const category = problem.theme || 'ukjent';
             metaElement.innerHTML = `
                 <span class="category-badge ${category}">${category}</span>
                 <span class="difficulty-badge ${problem.difficulty}">${problem.difficulty}</span>
@@ -277,7 +284,7 @@ class ProblemManager implements IProblemManager {
         };
 
         this.problems.forEach(problem => {
-            const cat = problem.category || 'unknown';
+            const cat = problem.theme || 'unknown';
             const diff = problem.difficulty || 'unknown';
             stats.categories[cat] = (stats.categories[cat] || 0) + 1;
             stats.difficulties[diff] = (stats.difficulties[diff] || 0) + 1;

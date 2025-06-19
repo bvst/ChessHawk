@@ -4,11 +4,11 @@
  * Supports both local JSON and future API implementations
  */
 
-import type { Puzzle } from '../stores/GameStore';
+import type { Puzzle, PuzzleDifficulty, TacticalTheme } from '../types/puzzle.types';
 
 export interface PuzzleFilter {
-  theme?: string;
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  theme?: TacticalTheme;
+  difficulty?: PuzzleDifficulty;
   rating?: {
     min?: number;
     max?: number;

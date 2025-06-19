@@ -7,7 +7,7 @@
 
 // Import Chess.js with proper types
 import { Chess } from './chess-global.ts';
-import type { ChessInstance, ChessPuzzle, GameState, ModuleManager } from '../types/chess-hawk';
+import type { ChessInstance, ChessPuzzle, GameState, ModuleManager } from '../types/chess.types';
 
 // Import all modules
 import BoardManager from './board-manager.ts';
